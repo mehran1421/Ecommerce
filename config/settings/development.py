@@ -3,9 +3,15 @@ from .base import *
 DEBUG = True
 ALLOWED_HOSTS = []
 
-INSTALLED_APPS += [
+THIRD_PARTY_APPS = [
     # my app
 ]
+
+LOCAL_APPS = [
+    # install packages
+]
+
+INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE += [
     # my middleware
