@@ -4,7 +4,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 THIRD_PARTY_APPS = [
-    # my app
+    'products_app.apps.ProductsAppConfig',
 ]
 
 LOCAL_APPS = [
