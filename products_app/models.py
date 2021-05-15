@@ -5,6 +5,10 @@ from django.db.models.signals import pre_save
 
 
 class FormField(models.Model):
+    '''
+    different fields for each category
+    frontend developer use this to figure out what fields the user needs to fill
+    '''
     type_product = models.JSONField(verbose_name='فیلد های این دسته بندی')
 
     class Meta:
@@ -13,10 +17,16 @@ class FormField(models.Model):
 
 
 class Category(models.Model):
+    '''
+    for Grouping product data
+    '''
     title = models.CharField(max_length=200, unique=True, verbose_name="عنوان دسته بندی")
     slug = models.SlugField(blank=True, verbose_name="موضوع")
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
-    form_field = models.OneToOneField(FormField,default=1,on_delete=models.CASCADE,verbose_name='فیلدها')
+    # each category has a form field
+    # That's why I did this because the category may not have any fields
+    #for example (کالای دیجیتال)
+    form_field = models.OneToOneField(FormField, blank=True, on_delete=models.CASCADE, verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
     class Meta:
@@ -29,22 +39,29 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    '''
+    product---------category
+    samsung j7     کالای دیجیتال-موبایل
+    '''
     title = models.CharField(max_length=200, verbose_name="تایتل")
     slug = models.SlugField(blank=True, verbose_name="عنوان")
     category = models.ManyToManyField(Category, verbose_name="دسته بندی")
     description = models.JSONField(verbose_name='مشخصات محصول')
+    # The main photo of the product that is shown to the user
+    thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
     publish = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     created = models.DateTimeField(auto_now_add=True, verbose_name="ساخته ")
 
     class Meta:
-        verbose_name = "مقاله"
-        verbose_name_plural = "مقاله ها"
+        verbose_name = "محصول"
+        verbose_name_plural = "محصولات"
         ordering = ['-created']
 
     def __str__(self):
         return self.title
 
 
+# signals for automatic fill slug field
 def pre_save_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = unique_slug_generator(instance)
@@ -53,3 +70,14 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_receiver, sender=Product)
 pre_save.connect(pre_save_receiver, sender=Category)
 
+
+class Images(models.Model):
+    '''
+    images for each product that can to have many
+    '''
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کدام محصول')
+    image = models.ImageField(upload_to='images', verbose_name="عکس")
+
+    class Meta:
+        verbose_name = "عکس"
+        verbose_name_plural = "عکس ها"
