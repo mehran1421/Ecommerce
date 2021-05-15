@@ -1,12 +1,24 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, RetrieveAPIView
-from .serializers import ProductSerializer, CategorySerializer, ProductDetailSerializer
-from .models import Product, Category
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveUpdateAPIView
+)
+from .serializers import (
+    ProductSerializer,
+    CategorySerializer,
+    ProductDetailSerializer
+)
+from .models import (
+    Product,
+    Category
+)
+from .pagination import CategoryPagination, ProductPagination
 
 
 class ProductList(ListAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
+    pagination_class = ProductPagination
 
 
 class ProductDetail(RetrieveUpdateAPIView):
@@ -17,6 +29,7 @@ class ProductDetail(RetrieveUpdateAPIView):
 
 class ProductCategory(ListAPIView):
     serializer_class = ProductSerializer
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         category = Category.objects.get(slug=self.kwargs.get('slug'))
@@ -26,3 +39,4 @@ class ProductCategory(ListAPIView):
 class CategoryList(ListAPIView):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
+    pagination_class = CategoryPagination
