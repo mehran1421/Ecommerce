@@ -51,6 +51,7 @@ class Product(models.Model):
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
     publish = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     created = models.DateTimeField(auto_now_add=True, verbose_name="ساخته ")
+    status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
 
     class Meta:
         verbose_name = "محصول"

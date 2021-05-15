@@ -1,5 +1,10 @@
-from django.urls import path, include
-from .views import ProductList, CategoryList, ProductDetail,ProductCategory
+from django.urls import path
+from .views import (
+    ProductList,
+    CategoryList,
+    ProductDetail,
+    ProductCategory
+)
 
 app_name = 'product'
 urlpatterns = [
