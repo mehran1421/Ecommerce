@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
-    RetrieveUpdateAPIView
+    RetrieveUpdateDestroyAPIView,
 )
 from .serializers import (
     ProductSerializer,
@@ -24,7 +24,7 @@ class ProductList(ListCreateAPIView):
     permission_classes = (IsSuperUserOrReadOnly,)
 
 
-class ProductDetail(RetrieveUpdateAPIView):
+class ProductDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
     queryset = Product.objects.all()

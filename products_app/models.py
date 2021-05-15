@@ -20,13 +20,15 @@ class Category(models.Model):
     '''
     for Grouping product data
     '''
+    parent = models.ForeignKey('self', default=None, null=True, blank=True, on_delete=models.SET_NULL,
+                               verbose_name="زیردسته")
     title = models.CharField(max_length=200, unique=True, verbose_name="عنوان دسته بندی")
     slug = models.SlugField(blank=True, verbose_name="موضوع")
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
     # each category has a form field
     # That's why I did this because the category may not have any fields
     # for example (کالای دیجیتال)
-    form_field = models.OneToOneField(FormField, blank=True, on_delete=models.CASCADE, verbose_name='فیلدها')
+    form_field = models.OneToOneField(FormField, blank=True, null=True, on_delete=models.CASCADE, verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
     class Meta:
@@ -96,3 +98,18 @@ class Images(models.Model):
     class Meta:
         verbose_name = "عکس"
         verbose_name_plural = "عکس ها"
+
+
+class Variation(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کدام محصول')
+    price = models.DecimalField(decimal_places=2, max_digits=20)
+    sale_price = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
+    active = models.BooleanField(default=True)
+    inventory = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.product.title + ' : ' + str(self.price)
+
+    class Meta:
+        verbose_name = 'اطلاعات محصول'
+        ordering = ['price']
