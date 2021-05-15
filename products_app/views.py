@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import (
     ListAPIView,
+    ListCreateAPIView,
     RetrieveUpdateAPIView
 )
 from .serializers import (
@@ -13,18 +14,21 @@ from .models import (
     Category
 )
 from .pagination import CategoryPagination, ProductPagination
+from .permissions import IsSuperUserOrReadOnly
 
 
-class ProductList(ListAPIView):
+class ProductList(ListCreateAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     pagination_class = ProductPagination
+    permission_classes = (IsSuperUserOrReadOnly,)
 
 
 class ProductDetail(RetrieveUpdateAPIView):
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
     queryset = Product.objects.all()
+    permission_classes = (IsSuperUserOrReadOnly,)
 
 
 class ProductCategory(ListAPIView):
@@ -36,7 +40,8 @@ class ProductCategory(ListAPIView):
         return Product.objects.filter(category=category)
 
 
-class CategoryList(ListAPIView):
+class CategoryList(ListCreateAPIView):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     pagination_class = CategoryPagination
+    permission_classes = (IsSuperUserOrReadOnly,)
