@@ -25,7 +25,7 @@ class Category(models.Model):
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
     # each category has a form field
     # That's why I did this because the category may not have any fields
-    #for example (کالای دیجیتال)
+    # for example (کالای دیجیتال)
     form_field = models.OneToOneField(FormField, blank=True, on_delete=models.CASCADE, verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
@@ -45,7 +45,7 @@ class Product(models.Model):
     '''
     title = models.CharField(max_length=200, verbose_name="تایتل")
     slug = models.SlugField(blank=True, verbose_name="عنوان")
-    category = models.ManyToManyField(Category, verbose_name="دسته بندی")
+    category = models.ManyToManyField(Category, related_name='product', verbose_name="دسته بندی")
     description = models.JSONField(verbose_name='مشخصات محصول')
     # The main photo of the product that is shown to the user
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
@@ -60,6 +60,21 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def category_published(self):
+        return self.category.filter(status=True)
+
+    def category_to_string(self):
+        caty = []
+        for cat in self.category_published():
+            caty.append(
+                {
+                    "name": "{0}".format(cat.title),
+                    "slug": "{0}".format(cat.slug),
+                    "fields": cat.form_field.type_product
+                }
+            )
+        return caty
+
 
 # signals for automatic fill slug field
 def pre_save_receiver(sender, instance, *args, **kwargs):
@@ -68,7 +83,6 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(pre_save_receiver, sender=Product)
-pre_save.connect(pre_save_receiver, sender=Category)
 
 
 class Images(models.Model):
