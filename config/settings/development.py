@@ -9,7 +9,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    # install packages
+    'rest_framework',
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
