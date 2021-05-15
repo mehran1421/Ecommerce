@@ -20,7 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('products_app.urls')),
     path('auth/', include('account.urls')),
-    
+
     path('api-auth/', include('rest_framework.urls')),
 ]
 
