@@ -8,6 +8,7 @@ THIRD_PARTY_APPS = [
     'products_app.apps.ProductsAppConfig',
     'account.apps.AccountConfig',
     'carts.apps.CartsConfig',
+    'payment.apps.PaymentConfig',
 ]
 
 LOCAL_APPS = [
