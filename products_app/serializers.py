@@ -8,7 +8,6 @@ from .models import (
     Category,
     FormField,
     Images,
-    Variation
 )
 
 
@@ -17,16 +16,6 @@ class FormFieldSerializer(ModelSerializer):
         model = FormField
         fields = [
             'type_product',
-        ]
-
-
-class VariationSerializer(ModelSerializer):
-    class Meta:
-        model = Variation
-        fields = [
-            "id",
-            "title",
-            "price",
         ]
 
 
@@ -70,7 +59,6 @@ class ProductSerializer(ModelSerializer):
 class ProductDetailSerializer(ModelSerializer):
     category = CategorySerializer(many=True)
     images = SerializerMethodField()
-    variation_set = VariationSerializer(many=True)
 
     class Meta:
         model = Product
@@ -82,7 +70,6 @@ class ProductDetailSerializer(ModelSerializer):
             'images',
             'publish',
             'created',
-            'variation_set'
         ]
 
     def get_images(self, obj):

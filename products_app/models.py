@@ -99,17 +99,3 @@ class Images(models.Model):
         verbose_name = "عکس"
         verbose_name_plural = "عکس ها"
 
-
-class Variation(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کدام محصول')
-    price = models.DecimalField(decimal_places=2, max_digits=20)
-    sale_price = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
-    active = models.BooleanField(default=True)
-    inventory = models.IntegerField(null=True, blank=True)
-
-    def __str__(self):
-        return self.product.title + ' : ' + str(self.price)
-
-    class Meta:
-        verbose_name = 'اطلاعات محصول'
-        ordering = ['price']
