@@ -7,7 +7,7 @@ class Cart(models.Model):
     """
     Store a cart belonging to a user.
     """
-    user = models.ForeignKey(User, verbose_name='کاربر')
+    user = models.ForeignKey(User,on_delete=models.CASCADE, verbose_name='کاربر')
     products = models.ManyToManyField(Product, blank=True, verbose_name='محصول')
     subtotal = models.DecimalField(default=0.00, max_digits=100, decimal_places=2, verbose_name='مجموع قیمت')
     total = models.DecimalField(default=0.00, max_digits=100, decimal_places=2, verbose_name='قیمت')
