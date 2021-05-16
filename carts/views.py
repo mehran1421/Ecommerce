@@ -13,6 +13,6 @@ class CartListCreateApi(ListCreateAPIView):
     serializer_class = CartSerializers
 
     def get_queryset(self):
-        return Cart.objects.filter(user=self.request.user)
+        return Cart.objects.new_or_get(self.request)
 
 
