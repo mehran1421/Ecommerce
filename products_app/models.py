@@ -53,6 +53,7 @@ class Product(models.Model):
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
     publish = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     created = models.DateTimeField(auto_now_add=True, verbose_name="ساخته ")
+    price = models.DecimalField(decimal_places=2,default=00.00, max_digits=20,verbose_name='قیمت')
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
 
     class Meta:
