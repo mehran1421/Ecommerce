@@ -19,11 +19,13 @@ class CartItemSerializers(ModelSerializer):
 
 class CartSerializers(ModelSerializer):
 	products = ProductSerializer(many=True)
+	cart_item = CartItemSerializers(source='cartitem_set', many=True)
 
 	class Meta:
 		model = Cart
 		fields = [
 			'user',
+			'cart_item',
 			'products',
 			'subtotal',
 			'total',
