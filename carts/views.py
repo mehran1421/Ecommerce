@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
 from .serializers import CartSerializers, CartItemSerializers
 from .models import Cart, CartItem
+from rest_framework.response import Response
 
 
 class CartListApi(ListAPIView):
@@ -36,7 +37,11 @@ class CartItemDeleteApi(RetrieveDestroyAPIView):
 	lookup_field = 'pk'
 
 	def get_object(self):
-		pk=self.kwargs.get('pk')
-		return CartItem.objects.get(pk=pk)
+		queryset = CartItem.objects.filter(id=self.kwargs['pk']).first()
+		return queryset
 
-
+	def perform_destroy(self, instance):
+		instance = self.get_object()
+		if instance.cart.user != self.request.user:
+			return Response("Cannot delete default system category",status=403)
+		return instance.delete()
