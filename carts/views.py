@@ -9,10 +9,20 @@ from .permissions import IsSuperUser, IsSuperUserOrSelf
 
 
 class CartPayListApi(ListAPIView):
+    '''
+    To show the members who have paid
+    '''
     queryset = Cart.objects.filter(is_pay=True)
     serializer_class = CartSerializers
+    # just show to superuser
     permission_classes = (IsSuperUser,)
+    ordering = ['-timestamp']
+    # localhost:8000/cart/all/?search= mehran
+    search_fields = ['user__username', 'user__first_name', 'user__last_name', 'is_pay']
+    # localhost:8000/cart/all/?ordering=-timestamp
+    ordering_fields = ['timestamp']
 
+    # for cache
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 60))
     def dispatch(self, *args, **kwargs):
@@ -20,6 +30,9 @@ class CartPayListApi(ListAPIView):
 
 
 class CartListCreateApi(ListCreateAPIView):
+    '''
+    create and show cart object
+    '''
     serializer_class = CartSerializers
     permission_classes = (IsSuperUserOrSelf,)
 
@@ -38,6 +51,9 @@ class CartListCreateApi(ListCreateAPIView):
 
 
 class CartItemCreateApi(ListCreateAPIView):
+    '''
+    each cart have many cart item
+    '''
     serializer_class = CartItemSerializers
 
     def get_queryset(self):
@@ -50,6 +66,9 @@ class CartItemCreateApi(ListCreateAPIView):
 
 
 class CartItemDeleteApi(RetrieveDestroyAPIView):
+    '''
+    delete cart item
+    '''
     serializer_class = CartItemSerializers
     lookup_field = 'pk'
     permission_classes = (IsSuperUserOrSelf,)
