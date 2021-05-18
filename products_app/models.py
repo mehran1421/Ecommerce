@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from .utils import unique_slug_generator
 from django.db.models.signals import pre_save
+from django.utils.html import format_html
 
 
 class FormField(models.Model):
@@ -56,7 +57,7 @@ class Product(models.Model):
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
     publish = models.DateTimeField(default=timezone.now, verbose_name="زمان")
     created = models.DateTimeField(auto_now_add=True, verbose_name="ساخته ")
-    price = models.DecimalField(decimal_places=2,default=00.00, max_digits=20,verbose_name='قیمت')
+    price = models.DecimalField(decimal_places=2, default=00.00, max_digits=20, verbose_name='قیمت')
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
 
     class Meta:
@@ -74,16 +75,14 @@ class Product(models.Model):
         return self.category.filter(status=True)
 
     def category_to_string(self):
-        caty = []
-        for cat in self.category_published():
-            caty.append(
-                {
-                    "name": "{0}".format(cat.title),
-                    "slug": "{0}".format(cat.slug),
-                    "fields": cat.form_field.type_product
-                }
-            )
-        return caty
+        return ", ".join([cat.title for cat in self.category_published()])
+
+    category_to_string.short_description = "زیردسته"
+
+    def thumbnail_tag(self):
+        return format_html("<img width=100 src='{}'>".format(self.thumbnail.url))
+
+    thumbnail_tag.short_description = "عکس"
 
 
 # signals for automatic fill slug field
@@ -108,4 +107,3 @@ class Images(models.Model):
         indexes = [
             models.Index(fields=['product']),
         ]
-
