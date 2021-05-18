@@ -35,6 +35,9 @@ class Category(models.Model):
         verbose_name = "دسته بندی"
         verbose_name_plural = "دسته بندی ها"
         ordering = ['position']
+        indexes = [
+            models.Index(fields=['slug']),
+        ]
 
     def __str__(self):
         return self.title
@@ -60,6 +63,9 @@ class Product(models.Model):
         verbose_name = "محصول"
         verbose_name_plural = "محصولات"
         ordering = ['-created']
+        indexes = [
+            models.Index(fields=['slug']),
+        ]
 
     def __str__(self):
         return self.title
@@ -99,4 +105,7 @@ class Images(models.Model):
     class Meta:
         verbose_name = "عکس"
         verbose_name_plural = "عکس ها"
+        indexes = [
+            models.Index(fields=['product']),
+        ]
 

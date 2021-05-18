@@ -20,6 +20,9 @@ class Cart(models.Model):
 	class Meta:
 		verbose_name = 'سبد خرید'
 		verbose_name_plural = 'سبدهای خرید'
+		indexes = [
+			models.Index(fields=['user']),
+		]
 
 	def __str__(self):
 		return str(self.user.get_full_name()) + " : " + str(self.user.username)
