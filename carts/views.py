@@ -8,15 +8,15 @@ from django.views.decorators.vary import vary_on_cookie
 from .permissions import IsSuperUser, IsSuperUserOrSelf
 
 
-class CartListApi(ListAPIView):
-    queryset = Cart.objects.all()
+class CartPayListApi(ListAPIView):
+    queryset = Cart.objects.filter(is_pay=True)
     serializer_class = CartSerializers
     permission_classes = (IsSuperUser,)
 
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 60))
     def dispatch(self, *args, **kwargs):
-        return super(CartListApi, self).dispatch(*args, **kwargs)
+        return super(CartPayListApi, self).dispatch(*args, **kwargs)
 
 
 class CartListCreateApi(ListCreateAPIView):
