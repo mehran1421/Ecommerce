@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from .permissions import IsSuperUser, IsSuperUserOrSelf
+from django.http import JsonResponse
 
 
 class CartPayListApi(ListAPIView):
@@ -34,7 +35,6 @@ class CartListCreateApi(ListCreateAPIView):
     create and show cart object
     '''
     serializer_class = CartSerializers
-    permission_classes = (IsSuperUserOrSelf,)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -46,7 +46,7 @@ class CartListCreateApi(ListCreateAPIView):
 
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60 * 60))
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, *args, **kwargs):
         return super(CartListCreateApi, self).dispatch(*args, **kwargs)
 
 
@@ -70,15 +70,6 @@ class CartItemDeleteApi(RetrieveDestroyAPIView):
     delete cart item
     '''
     serializer_class = CartItemSerializers
+    queryset = CartItem.objects.all()
     lookup_field = 'pk'
     permission_classes = (IsSuperUserOrSelf,)
-
-    def get_object(self):
-        queryset = CartItem.objects.filter(id=self.kwargs['pk']).first()
-        return queryset
-
-    def perform_destroy(self, instance):
-        instance = self.get_object()
-        if instance.cart.user != self.request.user:
-            return Response("Cannot delete default system category", status=403)
-        return instance.delete()
