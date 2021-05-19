@@ -1,12 +1,11 @@
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
 from .serializers import CartSerializers, CartItemSerializers
 from .models import Cart, CartItem
-from rest_framework.response import Response
+from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
-from .permissions import IsSuperUser, IsSuperUserOrSelf
-from django.http import JsonResponse
+from .permissions import IsSuperUser, IsSuperUserOrSelfObject
 
 
 class CartPayListApi(ListAPIView):
@@ -72,4 +71,4 @@ class CartItemDeleteApi(RetrieveDestroyAPIView):
     serializer_class = CartItemSerializers
     queryset = CartItem.objects.all()
     lookup_field = 'pk'
-    permission_classes = (IsSuperUserOrSelf,)
+    permission_classes = (IsSuperUserOrSelfObject,)

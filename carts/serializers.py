@@ -21,15 +21,15 @@ class CartSerializers(ModelSerializer):
     products = ProductSerializer(many=True)
     cart_item = CartItemSerializers(source='cartitem_set', many=True)
     # first add MERCHANT in payment app
-    # must connect to internet 
-    pay = HyperlinkedIdentityField(view_name='pay:request')
+    # must connect to internet
+    # pay = HyperlinkedIdentityField(view_name='pay:request')
 
     class Meta:
         model = Cart
         fields = [
             'user',
             'cart_item',
-            'pay',
+            # 'pay',
             'products',
             'subtotal',
             'total',

@@ -1,4 +1,5 @@
 # How to RUN
+###### first run redis and:
 ```
 python manage.py makemigrations --settings=config.settings.development
 python manage.py migrate --settings=config.settings.development
