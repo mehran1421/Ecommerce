@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from .permissions import IsSuperUser, IsSuperUserOrSelfObject
+from rest_framework.permissions import IsAuthenticated
 
 
 class CartPayListApi(ListAPIView):
@@ -34,6 +35,7 @@ class CartListCreateApi(ListCreateAPIView):
     create and show cart object
     '''
     serializer_class = CartSerializers
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
