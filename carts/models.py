@@ -1,5 +1,5 @@
 from django.db import models
-from account.models import User
+from my_user.models import User
 from products_app.models import Product
 from decimal import Decimal
 from django.db.models.signals import pre_save, post_save, post_delete

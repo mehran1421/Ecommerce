@@ -20,13 +20,16 @@ from rest_framework_simplejwt import views as jwt_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('products_app.urls')),
-    path('auth/', include('account.urls')),
+    path('auth/', include('my_user.urls')),
     path('cart/', include('carts.urls')),
     path('payment/', include('payment.urls')),
 
+    path('api/rest-auth/', include('dj_rest_auth.urls')),
+    path('api/rest-auth/registration/', include('dj_rest_auth.registration.urls'))
+
     # path('api-auth/', include('rest_framework.urls')),
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    # path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 from django.conf import settings

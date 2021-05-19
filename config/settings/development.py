@@ -6,17 +6,26 @@ ALLOWED_HOSTS = []
 
 THIRD_PARTY_APPS = [
     'products_app.apps.ProductsAppConfig',
-    'account.apps.AccountConfig',
+    'my_user.apps.MyUserConfig',
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',
 ]
 
 LOCAL_APPS = [
+    'django.contrib.sites',
     'rest_framework',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
     'django_filters',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
+
+SITE_ID = 1
 
 MIDDLEWARE += [
     # my middleware
@@ -27,7 +36,7 @@ MIDDLEWARE += [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -38,6 +47,9 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ]
 }
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'access'
+JWT_AUTH_REFRESH_COOKIE = 'refresh'
 
 CACHES = {
     "default": {
@@ -70,4 +82,4 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # for custom user models
-AUTH_USER_MODEL = 'account.User'
+AUTH_USER_MODEL = 'my_user.User'
