@@ -5,8 +5,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 THIRD_PARTY_APPS = [
-    'products_app.apps.ProductsAppConfig',
-    'my_user.apps.MyUserConfig',
+    'products.apps.ProductsAppConfig',
+    'users.apps.MyUserConfig',
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',
 ]
@@ -82,4 +82,4 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # for custom user models
-AUTH_USER_MODEL = 'my_user.User'
+AUTH_USER_MODEL = 'users.User'

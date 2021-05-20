@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('products_app', '0001_initial'),
+        ('products', '0001_initial'),
     ]
 
     operations = [
@@ -35,12 +35,12 @@ class Migration(migrations.Migration):
                 ('quantity', models.PositiveIntegerField(default=1)),
                 ('line_item_total', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('cart', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='carts.cart', verbose_name='سبد خرید')),
-                ('item', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='products_app.product', verbose_name='محصول')),
+                ('item', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='products.product', verbose_name='محصول')),
             ],
         ),
         migrations.AddField(
             model_name='cart',
             name='products',
-            field=models.ManyToManyField(through='carts.CartItem', to='products_app.Product', verbose_name='محصول'),
+            field=models.ManyToManyField(through='carts.CartItem', to='products.Product', verbose_name='محصول'),
         ),
     ]

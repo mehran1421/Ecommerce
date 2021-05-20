@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from .models import Cart, CartItem
-from products_app.serializers import ProductSerializer
+from products.serializers import ProductSerializer
 
 
 class CartItemSerializers(ModelSerializer):

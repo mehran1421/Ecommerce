@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='ساخته ')),
                 ('price', models.DecimalField(decimal_places=2, default=0.0, max_digits=20, verbose_name='قیمت')),
                 ('status', models.BooleanField(default=True, verbose_name='آیا نمایش داده شود؟')),
-                ('category', models.ManyToManyField(related_name='product', to='products_app.Category', verbose_name='دسته بندی')),
+                ('category', models.ManyToManyField(related_name='product', to='products.Category', verbose_name='دسته بندی')),
             ],
             options={
                 'verbose_name': 'محصول',
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('image', models.ImageField(upload_to='images', verbose_name='عکس')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='products_app.product', verbose_name='کدام محصول')),
+                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='products.product', verbose_name='کدام محصول')),
             ],
             options={
                 'verbose_name': 'عکس',
@@ -74,12 +74,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='category',
             name='form_field',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='products_app.formfield', verbose_name='فیلدها'),
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='products.formfield', verbose_name='فیلدها'),
         ),
         migrations.AddField(
             model_name='category',
             name='parent',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, to='products_app.category', verbose_name='زیردسته'),
+            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, to='products.category', verbose_name='زیردسته'),
         ),
         migrations.AddIndex(
             model_name='product',

@@ -19,8 +19,8 @@ from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('products_app.urls')),
-    path('auth/', include('my_user.urls')),
+    path('', include('products.urls')),
+    path('auth/', include('users.urls')),
     path('cart/', include('carts.urls')),
     path('payment/', include('payment.urls')),
 
