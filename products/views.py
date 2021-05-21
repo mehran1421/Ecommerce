@@ -32,4 +32,16 @@ class ProductViews(ViewSet):
         serializer = ProductSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    def create(self, request):
+        try:
+            serializer = ProductSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
+
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
     
