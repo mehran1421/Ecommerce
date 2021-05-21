@@ -20,14 +20,16 @@ class FigureFieldSerializer(ModelSerializer):
 
 
 class CategorySerializer(ModelSerializer):
-    form_field = FigureFieldSerializer()
-    product_category = HyperlinkedIdentityField(view_name='product:product_category', lookup_field='slug')
+    form_field = FigureFieldSerializer(many=True)
+
+    # product_category = HyperlinkedIdentityField(view_name='product:product_category', lookup_field='slug')
 
     class Meta:
         model = Category
         fields = [
             'title',
-            'product_category',
+            'slug',
+            # 'product_category',
             'status',
             'form_field',
             'position',
@@ -43,16 +45,17 @@ class ImageSerializer(ModelSerializer):
 
 
 class ProductSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='product:detail', lookup_field='slug')
+    url = HyperlinkedIdentityField(view_name='product:product-detail', lookup_field='slug')
 
     class Meta:
         model = Product
         fields = [
             'url',
+            'slug',
             'title',
             'thumbnail',
-            'publish',
-            'created',
+            'price',
+            'persian_publish'
         ]
 
 
@@ -64,12 +67,16 @@ class ProductDetailSerializer(ModelSerializer):
         model = Product
         fields = [
             'title',
+            'slug',
+            'seller',
             'description',
             'category',
             'thumbnail',
             'images',
-            'publish',
-            'created',
+            'persian_publish',
+            'price',
+            'status',
+            'choice',
         ]
 
     def get_images(self, obj):

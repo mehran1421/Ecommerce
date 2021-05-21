@@ -64,3 +64,44 @@ class ProductViews(ViewSet):
         product = Product.objects.get(slug=slug)
         product.delete()
         return Response({'status': 'ok'}, status=200)
+
+
+class CategoryViews(ViewSet):
+    # def get_permissions(self):
+    #     if self.action == 'create':
+    #         return IsSuperUserOrIsSellerOrReadOnly
+    #     elif self.action == 'retrieve':
+    #         return IsSuperUserOrIsSellerProductOrReadOnly
+    # @method_decorator(cache_page(60 * 60 * 2))
+    # @method_decorator(vary_on_cookie)
+    lookup_field = 'slug'
+
+    def list(self, request):
+        queryset = Category.objects.filter(status=True)
+        serializer = CategorySerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        try:
+            serializer = CategorySerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
+
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
+    def update(self, request, slug=None):
+        category = Category.objects.get(slug=slug)
+        serializer = ProductDetailSerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
+    def destroy(self, request, slug=None):
+        category = Category.objects.get(slug=slug)
+        category.delete()
+        return Response({'status': 'ok'}, status=200)
