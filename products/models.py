@@ -1,15 +1,13 @@
 from django.db import models
 from django.utils import timezone
-from .utils import unique_slug_generator
-from django.db.models.signals import pre_save
 from django.utils.html import format_html
 
 
 class FormField(models.Model):
-    '''
+    """
     different fields for each category
     frontend developer use this to figure out what fields the user needs to fill
-    '''
+    """
     type_product = models.JSONField(verbose_name='فیلد های این دسته بندی')
 
     class Meta:
@@ -18,17 +16,20 @@ class FormField(models.Model):
 
 
 class Category(models.Model):
-    '''
-    for Grouping product data
-    '''
+    """
+     for Grouping product data
+    """
     parent = models.ForeignKey('self', default=None, null=True, blank=True, on_delete=models.SET_NULL,
                                verbose_name="زیردسته")
     title = models.CharField(max_length=200, unique=True, verbose_name="عنوان دسته بندی")
     slug = models.SlugField(blank=True, verbose_name="موضوع")
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
-    # each category has a form field
-    # That's why I did this because the category may not have any fields
-    # for example (کالای دیجیتال)
+    '''
+    each category has a form field
+    That's why I did this because the category may not have any fields
+    for example (کالای دیجیتال)
+    '''
+
     form_field = models.OneToOneField(FormField, blank=True, null=True, on_delete=models.CASCADE, verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
@@ -45,10 +46,10 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    '''
+    """
     product---------category
     samsung j7     کالای دیجیتال-موبایل
-    '''
+    """
     title = models.CharField(max_length=200, verbose_name="تایتل")
     slug = models.SlugField(blank=True, verbose_name="عنوان")
     category = models.ManyToManyField(Category, related_name='product', verbose_name="دسته بندی")
@@ -85,19 +86,10 @@ class Product(models.Model):
     thumbnail_tag.short_description = "عکس"
 
 
-# signals for automatic fill slug field
-def pre_save_receiver(sender, instance, *args, **kwargs):
-    if not instance.slug:
-        instance.slug = unique_slug_generator(instance)
-
-
-pre_save.connect(pre_save_receiver, sender=Product)
-
-
 class Images(models.Model):
-    '''
-    images for each product that can to have many
-    '''
+    """
+     images for each product that can to have many
+    """
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کدام محصول')
     image = models.ImageField(upload_to='images', verbose_name="عکس")
 
