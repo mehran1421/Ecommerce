@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from users.models import User
 
 
-class FormField(models.Model):
+class FigureField(models.Model):
     """
     different fields for each category
     frontend developer use this to figure out what fields the user needs to fill
@@ -31,7 +31,7 @@ class Category(models.Model):
     for example (کالای دیجیتال)
     '''
 
-    form_field = models.OneToOneField(FormField, blank=True, null=True, on_delete=models.CASCADE, verbose_name='فیلدها')
+    form_field = models.OneToOneField(FigureField, blank=True, null=True, on_delete=models.CASCADE, verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
     class Meta:
