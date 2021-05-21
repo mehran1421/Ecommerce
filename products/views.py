@@ -60,4 +60,7 @@ class ProductViews(ViewSet):
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
-    
+    def destroy(self, request, slug=None):
+        product = Product.objects.get(slug=slug)
+        product.delete()
+        return Response({'status': 'ok'}, status=200)
