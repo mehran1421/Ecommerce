@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
+from users.models import User
 
 
 class FormField(models.Model):
@@ -59,6 +60,7 @@ class Product(models.Model):
     slug = models.SlugField(blank=True, verbose_name="عنوان")
     category = models.ManyToManyField(Category, related_name='product', verbose_name="دسته بندی")
     description = models.JSONField(verbose_name='مشخصات محصول')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='فروشنده')
     # The main photo of the product that is shown to the user
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
     publish = models.DateTimeField(default=timezone.now, verbose_name="زمان")
