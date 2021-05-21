@@ -44,4 +44,20 @@ class ProductViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
+    # @method_decorator(cache_page(60 * 60 * 2))
+    # @method_decorator(vary_on_cookie)
+    def retrieve(self, request, slug=None):
+        queryset = Product.objects.filter(slug=slug, status=True, choice='p')
+        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def update(self, request, slug=None):
+        product = Product.objects.get(slug=slug)
+        print(product)
+        serializer = ProductDetailSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
     
