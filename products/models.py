@@ -50,6 +50,11 @@ class Product(models.Model):
     product---------category
     samsung j7     کالای دیجیتال-موبایل
     """
+    Status_Choise = (
+        ('d', 'درحال بررسی'),
+        ('p', 'تغییرات صورت گرفته'),
+    )
+
     title = models.CharField(max_length=200, verbose_name="تایتل")
     slug = models.SlugField(blank=True, verbose_name="عنوان")
     category = models.ManyToManyField(Category, related_name='product', verbose_name="دسته بندی")
@@ -60,6 +65,7 @@ class Product(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name="ساخته ")
     price = models.DecimalField(decimal_places=2, default=00.00, max_digits=20, verbose_name='قیمت')
     status = models.BooleanField(default=True, verbose_name="آیا نمایش داده شود؟")
+    choice = models.CharField(max_length=1, choices=Status_Choise, verbose_name="وضعیت")
 
     class Meta:
         verbose_name = "محصول"
