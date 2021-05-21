@@ -6,21 +6,21 @@ from rest_framework.serializers import (
 from .models import (
     Product,
     Category,
-    FormField,
+    FigureField,
     Images,
 )
 
 
-class FormFieldSerializer(ModelSerializer):
+class FigureFieldSerializer(ModelSerializer):
     class Meta:
-        model = FormField
+        model = FigureField
         fields = [
             'type_product',
         ]
 
 
 class CategorySerializer(ModelSerializer):
-    form_field = FormFieldSerializer()
+    form_field = FigureFieldSerializer()
     product_category = HyperlinkedIdentityField(view_name='product:product_category', lookup_field='slug')
 
     class Meta:
