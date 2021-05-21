@@ -9,11 +9,14 @@ class FigureField(models.Model):
     different fields for each category
     frontend developer use this to figure out what fields the user needs to fill
     """
-    type_product = models.JSONField(verbose_name='فیلد های این دسته بندی')
+    type_product = models.CharField(max_length=200, verbose_name='فیلد های این دسته بندی')
 
     class Meta:
         verbose_name = "فیلد محصول"
         verbose_name_plural = "فیلد های محصول"
+
+    def __str__(self):
+        return self.type_product
 
 
 class Category(models.Model):
@@ -31,7 +34,8 @@ class Category(models.Model):
     for example (کالای دیجیتال)
     '''
 
-    form_field = models.OneToOneField(FigureField, blank=True, null=True, on_delete=models.CASCADE, verbose_name='فیلدها')
+    form_field = models.ManyToManyField(FigureField, blank=True, null=True,
+                                        verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
     class Meta:
@@ -59,7 +63,7 @@ class Product(models.Model):
     title = models.CharField(max_length=200, verbose_name="تایتل")
     slug = models.SlugField(blank=True, verbose_name="عنوان")
     category = models.ManyToManyField(Category, related_name='product', verbose_name="دسته بندی")
-    description = models.JSONField(verbose_name='مشخصات محصول')
+    description = models.TextField(verbose_name='مشخصات محصول')
     seller = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='فروشنده')
     # The main photo of the product that is shown to the user
     thumbnail = models.ImageField(upload_to='images', blank=True, verbose_name="عکس")
