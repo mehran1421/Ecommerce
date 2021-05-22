@@ -40,9 +40,9 @@ urlpatterns = [
     path('auth/', include('users.urls')),
     path('cart/', include('carts.urls')),
     path('payment/', include('payment.urls')),
-
-    path('api/rest-auth/', include('dj_rest_auth.urls')),
-    path('api/rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api-auth/', include('rest_framework.urls')),
+    # path('api/rest-auth/', include('dj_rest_auth.urls')),
+    # path('api/rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

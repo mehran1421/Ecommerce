@@ -49,15 +49,15 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'django.contrib.sites',
+    # 'django.contrib.sites',
     'rest_framework',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'dj_rest_auth.registration',
-    'django_filters',
-    'rest_framework.authtoken',
-    'dj_rest_auth',
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+    # 'dj_rest_auth.registration',
+    # 'django_filters',
+    # 'rest_framework.authtoken',
+    # 'dj_rest_auth',
 
     'drf_yasg',
 ]
@@ -95,12 +95,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-SITE_ID = 1
+# SITE_ID = 1
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    ],
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    # ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
@@ -110,24 +110,21 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ]
 }
-REST_USE_JWT = True
-JWT_AUTH_COOKIE = 'access'
-JWT_AUTH_REFRESH_COOKIE = 'refresh'
+# REST_USE_JWT = True
+# JWT_AUTH_COOKIE = 'access'
+# JWT_AUTH_REFRESH_COOKIE = 'refresh'
 
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'TIMEOUT': 60 * 60 * 24
+        },
     }
+
 }
-
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
-
-CACHE_TTL = 60 * 1
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
