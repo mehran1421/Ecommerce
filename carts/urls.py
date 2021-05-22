@@ -1,10 +1,14 @@
-from django.urls import path
-from .views import CartPayListApi, CartListCreateApi,CartItemCreateApi,CartItemDeleteApi
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+# from .views import ProductViews, CategoryViews
 
-app_name = 'cart'
+# Create a router and register our viewsets with it.
+router = DefaultRouter()
+# router.register(r'product', ProductViews, basename='product')
+
+
+# The API URLs are now determined automatically by the router.
+app_name = 'carts'
 urlpatterns = [
-	path('all/', CartPayListApi.as_view(), name='list-pay'),
-	path('user/', CartListCreateApi.as_view(), name='list-user'),
-	path('cart_item/user/', CartItemCreateApi.as_view(), name='list-create-cart-item'),
-	path('cart_item/user/<int:pk>/',CartItemDeleteApi.as_view(),name='delete-cartItem'),
+    path('', include(router.urls)),
 ]
