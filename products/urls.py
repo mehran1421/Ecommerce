@@ -6,6 +6,7 @@ from .views import ProductViews, CategoryViews
 router = DefaultRouter()
 router.register(r'product', ProductViews, basename='product')
 router.register(r'category', CategoryViews, basename='category')
+# router.register(r'product_category', ProductCategory, basename='product_category')
 
 # The API URLs are now determined automatically by the router.
 app_name = 'product'

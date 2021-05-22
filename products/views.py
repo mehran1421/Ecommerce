@@ -9,6 +9,7 @@ from .models import (
     Product,
     Category
 )
+from rest_framework.decorators import action
 from users.models import User
 from .pagination import PaginationTools
 from .permissions import IsSuperUserOrIsSellerOrReadOnly, IsSuperUserOrIsSellerProductOrReadOnly
@@ -81,6 +82,13 @@ class CategoryViews(ViewSet):
         serializer = CategorySerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, slug=None):
+        global cat
+        cat = slug
+        queryset = Category.objects.filter(slug=slug, status=True)
+        serializer = CategorySerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
     def create(self, request):
         try:
             serializer = CategorySerializer(data=request.data)
@@ -105,3 +113,10 @@ class CategoryViews(ViewSet):
         category = Category.objects.get(slug=slug)
         category.delete()
         return Response({'status': 'ok'}, status=200)
+
+    @action(detail=True, methods=['get'], name='product-cat')
+    def product_category(self, request, slug=None):
+        queryset = Category.objects.filter(status=True, slug=slug).first()
+        products = Product.objects.filter(category=queryset)
+        serializer = ProductSerializer(products, context={'request': request}, many=True)
+        return Response(serializer.data)
