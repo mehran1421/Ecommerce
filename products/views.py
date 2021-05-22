@@ -12,18 +12,19 @@ from .models import (
 from rest_framework.decorators import action
 from users.models import User
 from .pagination import PaginationTools
-from .permissions import IsSuperUserOrIsSellerOrReadOnly, IsSuperUserOrIsSellerProductOrReadOnly
+from .permissions import IsSuperUserOrIsSeller, IsSuperUserOrIsSellerProductOrReadOnly
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
 
 class ProductViews(ViewSet):
-    # def get_permissions(self):
-    #     if self.action == 'create':
-    #         return IsSuperUserOrIsSellerOrReadOnly
-    #     elif self.action == 'retrieve':
-    #         return IsSuperUserOrIsSellerProductOrReadOnly
+    def get_permissions(self):
+        if self.action == 'create':
+            return IsSuperUserOrIsSeller
+        else:
+            return IsSuperUserOrIsSellerProductOrReadOnly
+
     # @method_decorator(cache_page(60 * 60 * 2))
     # @method_decorator(vary_on_cookie)
     lookup_field = 'slug'
@@ -37,7 +38,7 @@ class ProductViews(ViewSet):
         try:
             serializer = ProductSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(choice='d', status=False, seller=request.user)
             else:
                 return Response({'status': 'Bad Request'}, status=400)
 
@@ -53,16 +54,25 @@ class ProductViews(ViewSet):
         return Response(serializer.data)
 
     def update(self, request, slug=None):
-        product = Product.objects.get(slug=slug)
-        print(product)
+        if request.user.is_superuser:
+            product = Product.objects.get(slug=slug)
+        else:
+            product = Product.objects.get(slug=slug, seller=request.user)
+
         serializer = ProductDetailSerializer(product, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            if request.user.is_superuser:
+                serializer.save()
+            else:
+                serializer.save(choice='d', status=False, seller=request.user)
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
-        product = Product.objects.get(slug=slug)
+        if request.user.is_superuser:
+            product=Product.objects.get(slug=slug)
+        else:
+            product = Product.objects.get(slug=slug,seller=request.user)
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
