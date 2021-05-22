@@ -1,7 +1,6 @@
 from django.db import models
 from users.models import User
 from products.models import Product
-from decimal import Decimal
 from django.db.models.signals import pre_save, post_save, post_delete
 
 
@@ -30,6 +29,7 @@ class Cart(models.Model):
 
     def update_subtotal(self):
         subtotal = 0
+        self.total = 0
         items = self.cartitem_set.all()
         for item in items:
             subtotal += item.line_item_total
@@ -46,23 +46,3 @@ class CartItem(models.Model):
 
     def __str__(self):
         return self.item.title
-
-
-def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
-    qty = instance.quantity
-    if qty >= 1:
-        price = instance.item.price
-        line_item_total = Decimal(qty) * Decimal(price)
-        instance.line_item_total = line_item_total
-
-
-pre_save.connect(cart_item_pre_save_receiver, sender=CartItem)
-
-
-def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
-    instance.cart.update_subtotal()
-
-
-post_save.connect(cart_item_post_save_receiver, sender=CartItem)
-
-post_delete.connect(cart_item_post_save_receiver, sender=CartItem)
