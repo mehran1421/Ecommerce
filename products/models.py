@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.utils.html import format_html
 from users.models import User
 from extension.utils import jalaly_converter
-from django.core.cache import cache
 
 
 class FigureField(models.Model):

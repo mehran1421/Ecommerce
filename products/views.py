@@ -1,5 +1,14 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import action
+from django.core.cache import cache
+from users.models import User
+from .pagination import PaginationTools
+from .permissions import (
+    IsSuperUserOrIsSeller,
+    IsSuperUserOrIsSellerProductOrReadOnly
+)
 from .serializers import (
     ProductSerializer,
     CategorySerializer,
@@ -9,12 +18,6 @@ from .models import (
     Product,
     Category
 )
-from rest_framework.permissions import IsAdminUser
-from rest_framework.decorators import action
-from django.core.cache import cache
-from users.models import User
-from .pagination import PaginationTools
-from .permissions import IsSuperUserOrIsSeller, IsSuperUserOrIsSellerProductOrReadOnly
 
 
 class ProductViews(ViewSet):
@@ -85,19 +88,19 @@ class CategoryViews(ViewSet):
             permission_classes = (IsAdminUser,)
         return [permission() for permission in permission_classes]
 
-    # @method_decorator(cache_page(60 * 60 * 2))
-    # @method_decorator(vary_on_cookie)
     lookup_field = 'slug'
 
     def list(self, request):
-        queryset = Category.objects.filter(status=True)
-        serializer = CategorySerializer(queryset, context={'request': request}, many=True)
+        global obj
+        obj = cache.get('category-list', None)
+        if obj is None:
+            obj = Category.objects.filter(status=True)
+            cache.set('category-list', obj)
+        serializer = CategorySerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        global cat
-        cat = slug
-        queryset = Category.objects.filter(slug=slug, status=True)
+        queryset = obj.filter(slug=slug)
         serializer = CategorySerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
