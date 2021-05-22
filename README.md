@@ -20,10 +20,10 @@ and get refresh access token and post request to `localhost:8000/cart/user/`with
 # products
 
 * ### **models.py**
-####formField:
+#### formField:
 set field from each category for example:
 Mobile phones and shoes have different features
-####category:
+#### category:
 each product have many category and each category has just one form field
 ```
     {
@@ -40,7 +40,7 @@ each product have many category and each category has just one form field
 in product_category, you can See all products in the category.
 for more speed request to database use index 'slug'
 
-####product:
+#### product:
 products ordering by created and use index 'slug' for more speed,
 each product have many category and for Property use **jsonField**,
 ```
@@ -81,23 +81,23 @@ product detail
         "choice": "p"
     }
 ```
-####images:
+#### images:
 for product have many image 
 
 * ### **permissions.py**
-#####IsSuperUserOrIsSeller  and  IsSuperUserOrIsSellerProductOrReadOnly:
+##### IsSuperUserOrIsSeller  and  IsSuperUserOrIsSellerProductOrReadOnly:
 for create or update product that each product must change or create by owner product or super user
 ```
 obj.seller == request.user
 ```
-#####IsSuperUserOrReadonly:
+##### IsSuperUserOrReadonly:
 for create,update,destroy category by superuser and users just can 
 show list 
 
 * ### **signals.py**
-#####pre_save_receiver:
+##### pre_save_receiver:
 for auto fill slug product by `unique_slug_generator()` in utils.py
-#####pre_delete_receiver_product  and  pre_delete_receiver_category:
+##### pre_delete_receiver_product  and  pre_delete_receiver_category:
 for use in caching after delete/update product or category
 As such `cache.delete('category-list')` and in the views.py create again cache
 
