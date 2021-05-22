@@ -11,12 +11,10 @@ from .models import (
 )
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import action
+from django.core.cache import cache
 from users.models import User
 from .pagination import PaginationTools
 from .permissions import IsSuperUserOrIsSeller, IsSuperUserOrIsSellerProductOrReadOnly
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
 
 
 class ProductViews(ViewSet):
@@ -28,12 +26,14 @@ class ProductViews(ViewSet):
             permission_classes = (IsSuperUserOrIsSellerProductOrReadOnly,)
         return [permission() for permission in permission_classes]
 
-    # @method_decorator(cache_page(60 * 60 * 2))
-    # @method_decorator(vary_on_cookie)
     lookup_field = 'slug'
 
     def list(self, request):
-        queryset = Product.objects.filter(status=True, choice='p')
+        obj = cache.get('product-list', None)
+        if obj is None:
+            obj = Product.objects.filter(status=True, choice='p')
+            cache.set('product-list', obj)
+        queryset = obj
         serializer = ProductSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -49,11 +49,9 @@ class ProductViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
-    # @method_decorator(cache_page(60 * 60 * 2))
-    # @method_decorator(vary_on_cookie)
     def retrieve(self, request, slug=None):
-        queryset = Product.objects.filter(slug=slug, status=True, choice='p')
-        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
+        queryset2 = Product.objects.filter(slug=slug, status=True, choice='p').cache()
+        serializer = ProductDetailSerializer(queryset2, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def update(self, request, slug=None):
@@ -76,6 +74,7 @@ class ProductViews(ViewSet):
             product = Product.objects.get(slug=slug)
         else:
             product = Product.objects.get(slug=slug, seller=request.user)
+
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
