@@ -7,7 +7,8 @@ from users.models import User
 from .pagination import PaginationTools
 from .permissions import (
     IsSuperUserOrIsSeller,
-    IsSuperUserOrIsSellerProductOrReadOnly
+    IsSuperUserOrIsSellerProductOrReadOnly,
+    IsSuperUserOrReadonly
 )
 from .serializers import (
     ProductSerializer,
@@ -84,8 +85,10 @@ class ProductViews(ViewSet):
 
 class CategoryViews(ViewSet):
     def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = (IsAdminUser,)
+        if self.action in ['create', 'update', 'destroy']:
+            permission_classes = (IsSuperUserOrReadonly,)
+        else:
+            permission_classes = ()
         return [permission() for permission in permission_classes]
 
     lookup_field = 'slug'
@@ -132,7 +135,11 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
-        queryset = Category.objects.filter(status=True, slug=slug).first()
-        products = Product.objects.filter(category=queryset)
+        pro_obj = cache.get('product-list', None)
+        queryset = obj.filter(slug=slug).first()
+        if pro_obj is None:
+            products = Product.objects.filter(category=queryset)
+        else:
+            products = pro_obj.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
