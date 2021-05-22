@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class IsSuperUserOrIsSellerOrReadOnly(BasePermission):
+class IsSuperUserOrIsSeller(BasePermission):
     """
     for create product,
     just superuser or seller

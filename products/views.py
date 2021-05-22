@@ -9,6 +9,7 @@ from .models import (
     Product,
     Category
 )
+from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import action
 from users.models import User
 from .pagination import PaginationTools
@@ -21,9 +22,11 @@ from django.views.decorators.vary import vary_on_cookie
 class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
-            return IsSuperUserOrIsSeller
+            permission_classes = (IsSuperUserOrIsSeller,)
+
         else:
-            return IsSuperUserOrIsSellerProductOrReadOnly
+            permission_classes = (IsSuperUserOrIsSellerProductOrReadOnly,)
+        return [permission() for permission in permission_classes]
 
     # @method_decorator(cache_page(60 * 60 * 2))
     # @method_decorator(vary_on_cookie)
@@ -70,19 +73,19 @@ class ProductViews(ViewSet):
 
     def destroy(self, request, slug=None):
         if request.user.is_superuser:
-            product=Product.objects.get(slug=slug)
+            product = Product.objects.get(slug=slug)
         else:
-            product = Product.objects.get(slug=slug,seller=request.user)
+            product = Product.objects.get(slug=slug, seller=request.user)
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
 
 class CategoryViews(ViewSet):
-    # def get_permissions(self):
-    #     if self.action == 'create':
-    #         return IsSuperUserOrIsSellerOrReadOnly
-    #     elif self.action == 'retrieve':
-    #         return IsSuperUserOrIsSellerProductOrReadOnly
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = (IsAdminUser,)
+        return [permission() for permission in permission_classes]
+
     # @method_decorator(cache_page(60 * 60 * 2))
     # @method_decorator(vary_on_cookie)
     lookup_field = 'slug'
@@ -102,7 +105,7 @@ class CategoryViews(ViewSet):
     def create(self, request):
         try:
             serializer = CategorySerializer(data=request.data)
-            if serializer.is_valid():
+            if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
             else:
                 return Response({'status': 'Bad Request'}, status=400)
@@ -114,14 +117,15 @@ class CategoryViews(ViewSet):
     def update(self, request, slug=None):
         category = Category.objects.get(slug=slug)
         serializer = ProductDetailSerializer(category, data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
         category = Category.objects.get(slug=slug)
-        category.delete()
+        if request.user.is_superuser:
+            category.delete()
         return Response({'status': 'ok'}, status=200)
 
     @action(detail=True, methods=['get'], name='product-cat')
