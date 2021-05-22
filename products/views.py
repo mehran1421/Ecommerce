@@ -29,12 +29,12 @@ class ProductViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
+        global obj
         obj = cache.get('product-list', None)
         if obj is None:
             obj = Product.objects.filter(status=True, choice='p')
             cache.set('product-list', obj)
-        queryset = obj
-        serializer = ProductSerializer(queryset, context={'request': request}, many=True)
+        serializer = ProductSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -50,8 +50,8 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        queryset2 = Product.objects.filter(slug=slug, status=True, choice='p').cache()
-        serializer = ProductDetailSerializer(queryset2, context={'request': request}, many=True)
+        queryset = obj.filter(slug=slug)
+        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def update(self, request, slug=None):
