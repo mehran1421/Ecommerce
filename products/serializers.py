@@ -12,6 +12,10 @@ from .models import (
 
 
 class FigureFieldSerializer(ModelSerializer):
+    """
+    Property product
+    """
+
     class Meta:
         model = FigureField
         fields = [
@@ -20,20 +24,29 @@ class FigureFieldSerializer(ModelSerializer):
 
 
 class CategorySerializer(ModelSerializer):
-    form_field = FigureFieldSerializer(many=True)
-
-    # product_category = HyperlinkedIdentityField(view_name='product:product_category', lookup_field='slug')
+    """
+    list category
+    have a link for list product with selected category(product_category)
+    """
+    forms_field = SerializerMethodField()
+    product_category = HyperlinkedIdentityField(view_name='product:category-product-category', lookup_field='slug')
 
     class Meta:
         model = Category
         fields = [
             'title',
             'slug',
-            # 'product_category',
+            'product_category',
             'status',
-            'form_field',
+            'forms_field',
             'position',
         ]
+
+    def get_forms_field(self, obj):
+        form_list = []
+        for i in obj.form_field.all():
+            form_list.append(i.type_product)
+        return form_list
 
 
 class ImageSerializer(ModelSerializer):
@@ -45,6 +58,10 @@ class ImageSerializer(ModelSerializer):
 
 
 class ProductSerializer(ModelSerializer):
+    """
+    list product
+    have a link for get detail product with (url)
+    """
     url = HyperlinkedIdentityField(view_name='product:product-detail', lookup_field='slug')
 
     class Meta:
@@ -60,6 +77,9 @@ class ProductSerializer(ModelSerializer):
 
 
 class ProductDetailSerializer(ModelSerializer):
+    """
+    product detail any things
+    """
     category = CategorySerializer(many=True)
     images = SerializerMethodField()
 
