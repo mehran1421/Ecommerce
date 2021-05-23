@@ -1,20 +1,38 @@
 from .models import Cart, CartItem
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+from django.core.cache import cache
 from .serializers import CartItemListSerializers, CartItemDetailSerializers, CartListSerializers, CartDetailSerializers
 from users.models import User
 
 
 class CartItemViews(ViewSet):
     def list(self, request):
-        cart = Cart.objects.filter(user=request.user).first()
-        cartItem = CartItem.objects.filter(cart=cart)
-        serializer = CartItemListSerializers(cartItem, context={'request': request}, many=True)
+        obj = cache.get('cartItem-list', None)
+        cart = Cart.objects.all()
+        cart_obj = cart.filter(user=request.user).first()
+        if obj is None:
+            obj = CartItem.objects.filter(cart=cart_obj)
+            cache.set('cart-list', cart)
+            cache.set('cartItem-list', obj)
+
+        serializer = CartItemListSerializers(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        cart = Cart.objects.filter(user=request.user).first()
-        queryset = CartItem.objects.filter(cart=cart, pk=pk)
+        obj = cache.get('cartItem-list', None)
+        cart_cache = cache.get('cart-list', None)
+        if cart_cache is None:
+            cart = Cart.objects.all()
+            cache.set('cart-list', cart)
+            cart_obj = cart.filter(user=request.user).first()
+        else:
+            cart_obj = cart_cache.filter(user=request.user).first()
+
+        if obj is None:
+            obj = CartItem.objects.filter(cart=cart_obj)
+            cache.set('cartItem-list', obj)
+        queryset = obj.filter(pk=pk)
         serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
