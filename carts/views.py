@@ -15,7 +15,7 @@ from users.models import User
 
 class CartItemViews(ViewSet):
     def list(self, request):
-        global cartItem
+        global cartItem, cart
         cart = Cart.objects.filter(user=request.user).first()
         cartItem = CartItem.objects.filter(cart=cart)
         serializer = CartItemListSerializers(cartItem, context={'request': request}, many=True)
@@ -26,7 +26,16 @@ class CartItemViews(ViewSet):
         serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    def destroy(self, request, pk=None):
+        if request.user.is_superuser:
+            cart_item = CartItem.objects.get(pk=pk)
+        else:
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)
 
+        cart_item.delete()
+        return Response({'status': 'ok'}, status=200)
+
+    
 
 #
 # class CartPayListApi(ListAPIView):
