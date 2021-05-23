@@ -7,6 +7,9 @@ from .serializers import (
     CartListSerializers,
     CartDetailSerializers
 )
+from .permissions import (
+    IsSuperUserOrSelfObject,
+    IsSuperUser)
 from .models import (
     Cart,
     CartItem
@@ -14,6 +17,13 @@ from .models import (
 
 
 class CartItemViews(ViewSet):
+    def get_permissions(self):
+        if self.action in ['create','update', 'destroy']:
+            permission_classes = (IsSuperUserOrSelfObject,)
+        else:
+            permission_classes = ()
+        return [permission() for permission in permission_classes]
+
     def list(self, request):
         obj = cache.get('cartItem-list', None)
         cart = Cart.objects.all()
