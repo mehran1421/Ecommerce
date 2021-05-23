@@ -18,7 +18,7 @@ from .models import (
 
 class CartItemViews(ViewSet):
     def get_permissions(self):
-        if self.action in ['create','update', 'destroy']:
+        if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrSelfObject,)
         else:
             permission_classes = ()
@@ -113,6 +113,15 @@ class CartItemViews(ViewSet):
 
 
 class CartViews(ViewSet):
+    def get_permissions(self):
+        if self.action in ['retrieve', 'destroy', 'update']:
+            permission_classes = (IsSuperUserOrSelfObject,)
+        elif self.action == 'list':
+            permission_classes = (IsSuperUser,)
+        else:
+            permission_classes = ()
+        return [permission() for permission in permission_classes]
+
     def list(self, request):
         obj = cache.get('cart-list', None)
         if obj is None:
