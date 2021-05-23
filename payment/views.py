@@ -34,10 +34,17 @@ def verify(request, *args, **kwargs):
     if request.GET.get('Status') == 'OK':
         result = client.service.PaymentVerification(MERCHANT, request.GET['Authority'], amount)
         if result.Status == 100:
+            """
+            my code for pay cart
+            ===================================================
+            """
             cart = Cart.objects.get(pk=pk)
             cart.is_pay = True
             cart.timestamp = datetime.now()
             cart.save()
+            """
+            ===================================================
+            """
             return HttpResponse('Transaction success.\nRefID: ' + str(result.RefID))
         elif result.Status == 101:
             return HttpResponse('Transaction submitted : ' + str(result.Status))
