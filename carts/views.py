@@ -78,18 +78,26 @@ class CartItemViews(ViewSet):
 
 class CartViews(ViewSet):
     def list(self, request):
+        obj = cache.get('cart-list', None)
+        if obj is None:
+            obj = Cart.objects.all()
+            cache.set('cart-list', obj)
         if request.user.is_superuser:
-            cart = Cart.objects.all()
+            cart = obj
         else:
-            cart = Cart.objects.filter(user=request.user)
+            cart = obj.filter(user=request.user)
         serializer = CartListSerializers(cart, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        obj = cache.get('cart-list', None)
+        if obj is None:
+            obj = Cart.objects.all()
+            cache.set('cart-list', obj)
         if request.user.is_superuser:
-            cart = Cart.objects.filter(pk=pk)
+            cart = obj.filter(pk=pk)
         else:
-            cart = Cart.objects.filter(user=request.user, pk=pk)
+            cart = obj.filter(user=request.user, pk=pk)
         serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
         return Response(serializer.data)
 
