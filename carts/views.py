@@ -121,10 +121,13 @@ class CartViews(ViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
+        obj = cache.get('cart-list', None)
+        if obj is None:
+            obj = Cart.objects.all()
         if request.user.is_superuser:
-            cart = Cart.objects.get(pk=pk)
+            cart = obj.get(pk=pk)
         else:
-            cart = Cart.objects.get(user=request.user, pk=pk)
+            cart = obj.get(user=request.user, pk=pk)
         cart.delete()
         return Response({'status': 'ok'}, status=200)
 
@@ -144,10 +147,13 @@ class CartViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
+        obj = cache.get('cart-list', None)
+        if obj is None:
+            obj = Cart.objects.all()
         if request.user.is_superuser:
-            cart = Cart.objects.get(pk=pk)
+            cart = obj.get(pk=pk)
         else:
-            cart = Cart.objects.get(user=request.user, pk=pk)
+            cart = obj.get(user=request.user, pk=pk)
 
         serializer = CartDetailSerializers(cart, data=request.data)
         if serializer.is_valid():
