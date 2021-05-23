@@ -13,7 +13,6 @@ def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
         instance.line_item_total = line_item_total
 
 
-@receiver(post_save, sender=CartItem)
-@receiver(post_delete, sender=CartItem)
+@receiver([post_save, post_delete], sender=CartItem)
 def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
     instance.cart.update_subtotal()
