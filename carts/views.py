@@ -9,17 +9,23 @@ from .permissions import IsSuperUser, IsSuperUserOrSelfObject
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from .serializers import CartItemListSerializers
+from .serializers import CartItemListSerializers, CartItemDetailSerializers
 from users.models import User
 
 
 class CartItemViews(ViewSet):
     def list(self, request):
-        global cart
+        global cartItem
         cart = Cart.objects.filter(user=request.user).first()
         cartItem = CartItem.objects.filter(cart=cart)
         serializer = CartItemListSerializers(cartItem, context={'request': request}, many=True)
         return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = cartItem.filter(pk=pk)
+        serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
 
 
 #
