@@ -1,9 +1,16 @@
-from .models import Cart, CartItem
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from django.core.cache import cache
-from .serializers import CartItemListSerializers, CartItemDetailSerializers, CartListSerializers, CartDetailSerializers
-from users.models import User
+from .serializers import (
+    CartItemListSerializers,
+    CartItemDetailSerializers,
+    CartListSerializers,
+    CartDetailSerializers
+)
+from .models import (
+    Cart,
+    CartItem
+)
 
 
 class CartItemViews(ViewSet):
