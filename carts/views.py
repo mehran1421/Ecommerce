@@ -15,14 +15,14 @@ from users.models import User
 
 class CartItemViews(ViewSet):
     def list(self, request):
-        global cartItem, cart
         cart = Cart.objects.filter(user=request.user).first()
         cartItem = CartItem.objects.filter(cart=cart)
         serializer = CartItemListSerializers(cartItem, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = cartItem.filter(pk=pk)
+        cart = Cart.objects.filter(user=request.user).first()
+        queryset = CartItem.objects.filter(cart=cart, pk=pk)
         serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -30,13 +30,26 @@ class CartItemViews(ViewSet):
         if request.user.is_superuser:
             cart_item = CartItem.objects.get(pk=pk)
         else:
+            cart = Cart.objects.get(user=request.user)
             cart_item = CartItem.objects.get(pk=pk, cart=cart)
 
         cart_item.delete()
         return Response({'status': 'ok'}, status=200)
 
-    
+    def create(self, request):
+        try:
+            serializer = CartItemDetailSerializers(data=request.data)
+            cart = Cart.objects.get(user=request.user)
+            if serializer.is_valid():
+                serializer.save(cart=cart)
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
 
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
+    
 #
 # class CartPayListApi(ListAPIView):
 #     '''
