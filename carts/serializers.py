@@ -19,9 +19,12 @@ class CartItemListSerializers(ModelSerializer):
 
 
 class CartListSerializers(ModelSerializer):
+    detail = HyperlinkedIdentityField(view_name='carts:cart-detail')
+
     class Meta:
         model = Cart
         fields = [
+            'detail',
             'user',
             'subtotal',
             'total',
@@ -45,8 +48,8 @@ class CartItemDetailSerializers(ModelSerializer):
 
 
 class CartDetailSerializers(ModelSerializer):
-    # products = ProductSerializer(many=True)
-    # cart_item = CartItemListSerializers(source='cartitem_set', many=True)
+    products = ProductSerializer(many=True)
+    cart_item = CartItemListSerializers(source='cartitem_set', many=True)
 
     # first add MERCHANT in payment app
     # must connect to internet
@@ -56,7 +59,7 @@ class CartDetailSerializers(ModelSerializer):
         model = Cart
         fields = [
             'user',
-            # 'cart_item',
+            'cart_item',
             # 'pay',
             'products',
             'subtotal',
