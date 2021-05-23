@@ -1,15 +1,7 @@
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
-# from .serializers import CartSerializers, CartItemSerializers
 from .models import Cart, CartItem
-from django.http import Http404
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
-from .permissions import IsSuperUser, IsSuperUserOrSelfObject
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from .serializers import CartItemListSerializers, CartItemDetailSerializers
+from .serializers import CartItemListSerializers, CartItemDetailSerializers, CartListSerializers, CartDetailSerializers
 from users.models import User
 
 
@@ -65,7 +57,63 @@ class CartItemViews(ViewSet):
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
-#
+
+class CartViews(ViewSet):
+    def list(self, request):
+        if request.user.is_superuser:
+            cart = Cart.objects.all()
+        else:
+            cart = Cart.objects.filter(user=request.user)
+        serializer = CartListSerializers(cart, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        if request.user.is_superuser:
+            cart = Cart.objects.filter(pk=pk)
+        else:
+            cart = Cart.objects.filter(user=request.user, pk=pk)
+        serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        if request.user.is_superuser:
+            cart = Cart.objects.get(pk=pk)
+        else:
+            cart = Cart.objects.get(user=request.user, pk=pk)
+
+        cart.delete()
+        return Response({'status': 'ok'}, status=200)
+
+    def create(self, request):
+        try:
+            serializer = CartDetailSerializers(data=request.data)
+            if serializer.is_valid():
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(user=request.user)
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
+
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
+    def update(self, request, pk=None):
+        if request.user.is_superuser:
+            cart = Cart.objects.get(pk=pk)
+        else:
+            cart = Cart.objects.get(user=request.user, pk=pk)
+
+        serializer = CartDetailSerializers(cart, data=request.data)
+        if serializer.is_valid():
+            if request.user.is_superuser:
+                serializer.save()
+            else:
+                serializer.save(user=request.user)
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
 # class CartPayListApi(ListAPIView):
 #     '''
 #     To show the members who have paid
