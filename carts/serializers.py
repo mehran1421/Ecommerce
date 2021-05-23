@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from .models import Cart, CartItem
-from products.serializers import ProductSerializer
+from products.serializers import ProductSerializer, ProductDetailSerializer
 
 
 class CartItemListSerializers(ModelSerializer):
@@ -18,20 +18,6 @@ class CartItemListSerializers(ModelSerializer):
         ]
 
 
-class CartItemDetailSerializers(ModelSerializer):
-    # delete = HyperlinkedIdentityField(view_name='cart:delete-cartItem', lookup_field='pk')
-
-    class Meta:
-        model = CartItem
-        fields = [
-            'cart',
-            # 'delete',
-            'item',
-            'quantity',
-            'line_item_total',
-        ]
-
-
 class CartListSerializers(ModelSerializer):
     class Meta:
         model = Cart
@@ -41,6 +27,20 @@ class CartListSerializers(ModelSerializer):
             'total',
             'timestamp',
             'updated',
+        ]
+
+
+class CartItemDetailSerializers(ModelSerializer):
+    item = ProductDetailSerializer()
+    cart = CartListSerializers()
+
+    class Meta:
+        model = CartItem
+        fields = [
+            'cart',
+            'item',
+            'quantity',
+            'line_item_total',
         ]
 
 
