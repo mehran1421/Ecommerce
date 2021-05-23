@@ -49,7 +49,22 @@ class CartItemViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
-    
+    def update(self, request, pk=None):
+        if request.user.is_superuser:
+            cartItem = CartItem.objects.get(pk=pk)
+        else:
+            cart = Cart.objects.get(user=request.user)
+            cartItem = CartItem.objects.get(cart=cart)
+
+        serializer = CartItemDetailSerializers(cartItem, data=request.data)
+        if serializer.is_valid():
+            if request.user.is_superuser:
+                serializer.save()
+            else:
+                serializer.save(cart=cart)
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
 #
 # class CartPayListApi(ListAPIView):
 #     '''
