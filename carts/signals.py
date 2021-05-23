@@ -30,3 +30,4 @@ def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
 @receiver([post_save, post_delete], sender=Cart)
 def cart_post_save_receiver(sender, instance, *args, **kwargs):
     cache.delete('cart-list')
+    cache.delete('cartItem-list')
