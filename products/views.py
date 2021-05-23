@@ -7,7 +7,6 @@ from users.models import User
 from .pagination import PaginationTools
 from .permissions import (
     IsSuperUserOrIsSeller,
-    IsSuperUserOrIsSellerProductOrReadOnly,
     IsSuperUserOrReadonly
 )
 from .serializers import (
@@ -25,16 +24,16 @@ class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = (IsSuperUserOrIsSeller,)
-        elif self.action in ['update', 'destroy']:
-            permission_classes = (IsSuperUserOrIsSellerProductOrReadOnly,)
-        else:
+        elif self.action == 'list':
             permission_classes = ()
+        else:
+            permission_classes = (IsSuperUserOrReadonly,)
+
         return [permission() for permission in permission_classes]
 
     lookup_field = 'slug'
 
     def list(self, request):
-        global obj
         obj = cache.get('product-list', None)
         if obj is None:
             obj = Product.objects.filter(status=True, choice='p')
@@ -55,11 +54,16 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
+        obj = cache.get('product-list', None)
+        if obj is None:
+            obj = Product.objects.filter(status=True, choice='p')
+            cache.set('product-list', obj)
         queryset = obj.filter(slug=slug)
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def update(self, request, slug=None):
+        print(self.action)
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
         else:
@@ -77,11 +81,14 @@ class ProductViews(ViewSet):
     def destroy(self, request, slug=None):
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
-        else:
+        elif request.user.is_authenticated:
             product = Product.objects.get(slug=slug, seller=request.user)
 
-        product.delete()
-        return Response({'status': 'ok'}, status=200)
+        if product.seller == request.user or request.user.is_superuser:
+            product.delete()
+            return Response({'status': 'ok'}, status=200)
+        else:
+            return Response({'status': 'Bad Request'}, status=500)
 
 
 class CategoryViews(ViewSet):

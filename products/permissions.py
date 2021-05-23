@@ -16,22 +16,6 @@ class IsSuperUserOrIsSeller(BasePermission):
         )
 
 
-class IsSuperUserOrIsSellerProductOrReadOnly(BasePermission):
-    """
-    for delete or update product,just superuser or product seller
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-
-        return bool(
-            request.user.is_authenticated and
-            request.user.is_superuser or
-            obj.seller == request.user
-        )
-
-
 class IsSuperUserOrReadonly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
