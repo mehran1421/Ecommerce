@@ -11,8 +11,8 @@ class IsSuperUserOrIsSeller(BasePermission):
         return bool(
             # get access to superuser
             request.user.is_authenticated and
-            request.user.is_superuser or
-            request.user.is_seller
+            (request.user.is_superuser or
+             request.user.is_seller)
         )
 
 

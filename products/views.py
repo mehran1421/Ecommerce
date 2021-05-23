@@ -25,9 +25,10 @@ class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = (IsSuperUserOrIsSeller,)
-
-        else:
+        elif self.action in ['update', 'destroy']:
             permission_classes = (IsSuperUserOrIsSellerProductOrReadOnly,)
+        else:
+            permission_classes = ()
         return [permission() for permission in permission_classes]
 
     lookup_field = 'slug'
