@@ -31,3 +31,11 @@ def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
 def cart_post_save_receiver(sender, instance, *args, **kwargs):
     cache.delete('cart-list')
     cache.delete('cartItem-list')
+
+
+@receiver(pre_save, sender=Cart)
+def cart_pre_save_receiver(sender, instance, *args, **kwargs):
+    cart = Cart.objects.filter(user=instance.user)
+    count = cart.count()
+    if count == 1:
+        cart.delete()
