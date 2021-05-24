@@ -15,11 +15,13 @@ from .serializers import (
     InputProductSerializers,
     CategoryDetailSerializer,
     CategoryListSerializer,
-    CategoryInputSerializer
+    CategoryInputSerializer,
+    FigureFieldSerializer
 )
 from .models import (
     Product,
-    Category
+    Category,
+    FigureField
 )
 
 
@@ -167,3 +169,11 @@ class CategoryViews(ViewSet):
         products = pro_obj.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
+
+
+class FigureViews(ViewSet):
+    def list(self, request):
+        obj = cacheops(request, 'figure-list', FigureField)
+        serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
+        return Response(serializer.data)
+
