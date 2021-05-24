@@ -20,23 +20,25 @@ mobile = '09123456789'  # Optional
 CallbackURL = 'http://localhost:8000/verify'  # Important: need to edit for realy server.
 
 
+def cacheops(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj
+
+
 class PayViews(ViewSet):
     permission_classes = (IsSuperUser,)
 
     def list(self, request):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-            cache.set('cart-list', obj)
+        obj = cacheops(request, 'cart-list', Cart)
         cart = obj.filter(is_pay=True)
         serializer = CartListSerializers(cart, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-            cache.set('cart-list', obj)
+        obj = cacheops(request, 'cart-list', Cart)
         queryset = obj.filter(pk=pk, is_pay=True)
         serializer = CartDetailSerializers(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -44,8 +46,9 @@ class PayViews(ViewSet):
     @action(detail=False, methods=['get'], name='pay-search')
     def pay_search(self, request):
         # http://localhost:8000/payment/pay/pay_search/?search=ali
+        obj = cacheops(request, 'cart-list', Cart)
         query = self.request.GET.get('search')
-        object_list = Cart.objects.filter(
+        object_list = obj.filter(
             Q(user__first_name__icontains=query) |
             Q(user__last_name__icontains=query) |
             Q(user__username__icontains=query) |
