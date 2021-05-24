@@ -16,6 +16,14 @@ from .models import (
 )
 
 
+def cacheops(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj
+
+
 class CartItemViews(ViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
@@ -26,13 +34,9 @@ class CartItemViews(ViewSet):
 
     def list(self, request):
         try:
-            obj = cache.get('cartItem-list', None)
-            cart = Cart.objects.all()
-            cart_obj = cart.filter(user=request.user).first()
-            if obj is None:
-                obj = CartItem.objects.all()
-                cache.set('cart-list', cart)
-                cache.set('cartItem-list', obj)
+            obj = cacheops(request, 'cartItem-list', CartItem)
+            obj_cart = cacheops(request, 'cart-list', Cart)
+            cart_obj = obj_cart.filter(user=request.user).first()
             query = obj.filter(cart=cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -41,18 +45,9 @@ class CartItemViews(ViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            obj = cache.get('cartItem-list', None)
-            cart_cache = cache.get('cart-list', None)
-            if cart_cache is None:
-                cart = Cart.objects.all()
-                cache.set('cart-list', cart)
-                cart_obj = cart.filter(user=request.user).first()
-            else:
-                cart_obj = cart_cache.filter(user=request.user).first()
-
-            if obj is None:
-                obj = CartItem.objects.all()
-                cache.set('cartItem-list', obj)
+            obj = cacheops(request, 'cartItem-list', CartItem)
+            obj_cart = cacheops(request, 'cart-list', Cart)
+            cart_obj = obj_cart.filter(user=request.user).first()
             queryset = obj.filter(pk=pk, cart=cart_obj)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -61,14 +56,8 @@ class CartItemViews(ViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            obj = cache.get('cartItem-list', None)
-            obj_cart = cache.get('cart-list', None)
-            if obj is None:
-                obj = CartItem.objects.all()
-
-            if obj_cart is None:
-                obj_cart = Cart.objects.all()
-
+            obj = cacheops(request, 'cartItem-list', CartItem)
+            obj_cart = cacheops(request, 'cart-list', Cart)
             if request.user.is_superuser:
                 cart_item = obj.get(pk=pk)
             else:
@@ -81,9 +70,7 @@ class CartItemViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
-        obj_cart = cache.get('cart-list', None)
-        if obj_cart is None:
-            obj_cart = Cart.objects.all()
+        obj_cart = cacheops(request, 'cart-list', Cart)
         try:
             serializer = CartItemDetailSerializers(data=request.data)
             cart = obj_cart.get(user=request.user)
@@ -97,15 +84,9 @@ class CartItemViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
+        obj = cacheops(request, 'cartItem-list', CartItem)
+        obj_cart = cacheops(request, 'cart-list', Cart)
         try:
-            obj = cache.get('cartItem-list', None)
-            obj_cart = cache.get('cart-list', None)
-            if obj is None:
-                obj = CartItem.objects.all()
-
-            if obj_cart is None:
-                obj_cart = Cart.objects.all()
-
             if request.user.is_superuser:
                 cartItem = obj.get(pk=pk)
             else:
@@ -135,24 +116,16 @@ class CartViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
+        obj = cacheops(request, 'cart-list', Cart)
         try:
-            obj = cache.get('cart-list', None)
-            if obj is None:
-                obj = Cart.objects.all()
-                cache.set('cart-list', obj)
-
-            cart = obj
-            serializer = CartListSerializers(cart, context={'request': request}, many=True)
+            serializer = CartListSerializers(obj, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
+        obj = cacheops(request, 'cart-list', Cart)
         try:
-            obj = cache.get('cart-list', None)
-            if obj is None:
-                obj = Cart.objects.all()
-                cache.set('cart-list', obj)
             if request.user.is_superuser:
                 cart = obj.filter(pk=pk)
             else:
@@ -163,10 +136,8 @@ class CartViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def destroy(self, request, pk=None):
+        obj = cacheops(request, 'cart-list', Cart)
         try:
-            obj = cache.get('cart-list', None)
-            if obj is None:
-                obj = Cart.objects.all()
             if request.user.is_superuser:
                 cart = obj.get(pk=pk)
             else:
@@ -192,10 +163,8 @@ class CartViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
+        obj = cacheops(request, 'cart-list', Cart)
         try:
-            obj = cache.get('cart-list', None)
-            if obj is None:
-                obj = Cart.objects.all()
             if request.user.is_superuser:
                 cart = obj.get(pk=pk)
             else:
