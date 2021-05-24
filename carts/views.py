@@ -29,12 +29,12 @@ class CartItemViews(ViewSet):
             obj = cache.get('cartItem-list', None)
             cart = Cart.objects.all()
             cart_obj = cart.filter(user=request.user).first()
-            if obj is None or obj.first().cart.user != request.user:
-                obj = CartItem.objects.filter(cart=cart_obj)
+            if obj is None:
+                obj = CartItem.objects.all()
                 cache.set('cart-list', cart)
                 cache.set('cartItem-list', obj)
-
-            serializer = CartItemListSerializers(obj, context={'request': request}, many=True)
+            query = obj.filter(cart=cart_obj)
+            serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
@@ -43,17 +43,17 @@ class CartItemViews(ViewSet):
         try:
             obj = cache.get('cartItem-list', None)
             cart_cache = cache.get('cart-list', None)
-            if cart_cache is None or cart_cache.first().cart.user != request.user:
+            if cart_cache is None:
                 cart = Cart.objects.all()
                 cache.set('cart-list', cart)
                 cart_obj = cart.filter(user=request.user).first()
             else:
-                cart_obj = cart_cache.filter(user=request.user)
+                cart_obj = cart_cache.filter(user=request.user).first()
 
-            if obj is None or obj.first().cart.user != request.user:
-                obj = CartItem.objects.filter(cart=cart_obj)
+            if obj is None:
+                obj = CartItem.objects.all()
                 cache.set('cartItem-list', obj)
-            queryset = obj.filter(pk=pk)
+            queryset = obj.filter(pk=pk, cart=cart_obj)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
