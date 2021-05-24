@@ -17,3 +17,8 @@ class UserListSerializers(ModelSerializer):
             'is_seller'
         ]
 
+
+class UserDetailSerializers(ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
