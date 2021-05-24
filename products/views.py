@@ -177,3 +177,34 @@ class FigureViews(ViewSet):
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, pk=None):
+        obj = cacheops(request, 'figure-list', FigureField)
+        queryset = obj.filter(pk=pk)
+        serializer = FigureFieldSerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        try:
+            serializer = FigureFieldSerializer(data=request.data)
+            if serializer.is_valid() and request.user.is_superuser:
+                serializer.save()
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
+
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
+    def update(self, request, pk=None):
+        figure = FigureField.objects.get(pk=pk)
+        serializer = ProductDetailSerializer(figure, data=request.data)
+        if serializer.is_valid() and request.user.is_superuser:
+            serializer.save()
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
+    def destroy(self, request, pk=None):
+        figure = FigureField.objects.get(pk=pk)
+        if request.user.is_superuser:
+            figure.delete()
+        return Response({'status': 'ok'}, status=200)
