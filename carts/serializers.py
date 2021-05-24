@@ -3,6 +3,26 @@ from .models import Cart, CartItem
 from products.serializers import ProductSerializer, ProductDetailSerializer
 
 
+class CartItemInputSerializers(ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = [
+            'cart',
+            'item',
+            'quantity',
+            'line_item_total',
+        ]
+
+
+class CartInputSerializers(ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = [
+            'user',
+            'products',
+        ]
+
+
 class CartItemListSerializers(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='carts:cart-item-detail')
     item = ProductSerializer()

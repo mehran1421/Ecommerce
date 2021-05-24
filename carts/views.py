@@ -4,8 +4,10 @@ from django.core.cache import cache
 from .serializers import (
     CartItemListSerializers,
     CartItemDetailSerializers,
+    CartItemInputSerializers,
     CartListSerializers,
-    CartDetailSerializers
+    CartDetailSerializers,
+    CartInputSerializers
 )
 from .permissions import (
     IsSuperUserOrSelfObject,
@@ -72,7 +74,7 @@ class CartItemViews(ViewSet):
     def create(self, request):
         obj_cart = cacheops(request, 'cart-list', Cart)
         try:
-            serializer = CartItemDetailSerializers(data=request.data)
+            serializer = CartItemInputSerializers(data=request.data)
             cart = obj_cart.get(user=request.user)
             if serializer.is_valid():
                 serializer.save(cart=cart)
@@ -149,7 +151,7 @@ class CartViews(ViewSet):
 
     def create(self, request):
         try:
-            serializer = CartDetailSerializers(data=request.data)
+            serializer = CartInputSerializers(data=request.data)
             if serializer.is_valid():
                 if request.user.is_superuser:
                     serializer.save()
