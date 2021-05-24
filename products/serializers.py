@@ -9,6 +9,7 @@ from .models import (
     FigureField,
     Images,
 )
+from users.serializers import UserListSerializers
 
 
 class FigureFieldSerializer(ModelSerializer):
@@ -105,6 +106,7 @@ class ProductDetailSerializer(ModelSerializer):
     """
     category = CategoryListSerializer(many=True)
     images = SerializerMethodField()
+    seller = UserListSerializers()
 
     class Meta:
         model = Product
