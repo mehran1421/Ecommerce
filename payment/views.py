@@ -30,7 +30,14 @@ class PayViews(ViewSet):
         serializer = CartListSerializers(cart, context={'request': request}, many=True)
         return Response(serializer.data)
 
-    
+    def retrieve(self, request, pk=None):
+        obj = cache.get('cart-list', None)
+        if obj is None:
+            obj = Cart.objects.all()
+            cache.set('cart-list', obj)
+        queryset = obj.filter(pk=pk, is_pay=True)
+        serializer = CartDetailSerializers(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
 
 
 def send_request(request):
