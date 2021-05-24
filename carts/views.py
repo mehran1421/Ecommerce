@@ -25,51 +25,60 @@ class CartItemViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
-        obj = cache.get('cartItem-list', None)
-        cart = Cart.objects.all()
-        cart_obj = cart.filter(user=request.user).first()
-        if obj is None:
-            obj = CartItem.objects.filter(cart=cart_obj)
-            cache.set('cart-list', cart)
-            cache.set('cartItem-list', obj)
+        try:
+            obj = cache.get('cartItem-list', None)
+            cart = Cart.objects.all()
+            cart_obj = cart.filter(user=request.user).first()
+            if obj is None or obj.first().cart.user != request.user:
+                obj = CartItem.objects.filter(cart=cart_obj)
+                cache.set('cart-list', cart)
+                cache.set('cartItem-list', obj)
 
-        serializer = CartItemListSerializers(obj, context={'request': request}, many=True)
-        return Response(serializer.data)
+            serializer = CartItemListSerializers(obj, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
-        obj = cache.get('cartItem-list', None)
-        cart_cache = cache.get('cart-list', None)
-        if cart_cache is None:
-            cart = Cart.objects.all()
-            cache.set('cart-list', cart)
-            cart_obj = cart.filter(user=request.user).first()
-        else:
-            cart_obj = cart_cache.filter(user=request.user).first()
+        try:
+            obj = cache.get('cartItem-list', None)
+            cart_cache = cache.get('cart-list', None)
+            if cart_cache is None or cart_cache.first().cart.user != request.user:
+                cart = Cart.objects.all()
+                cache.set('cart-list', cart)
+                cart_obj = cart.filter(user=request.user).first()
+            else:
+                cart_obj = cart_cache.filter(user=request.user)
 
-        if obj is None:
-            obj = CartItem.objects.filter(cart=cart_obj)
-            cache.set('cartItem-list', obj)
-        queryset = obj.filter(pk=pk)
-        serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
-        return Response(serializer.data)
+            if obj is None or obj.first().cart.user != request.user:
+                obj = CartItem.objects.filter(cart=cart_obj)
+                cache.set('cartItem-list', obj)
+            queryset = obj.filter(pk=pk)
+            serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def destroy(self, request, pk=None):
-        obj = cache.get('cartItem-list', None)
-        obj_cart = cache.get('cart-list', None)
-        if obj is None:
-            obj = CartItem.objects.all()
+        try:
+            obj = cache.get('cartItem-list', None)
+            obj_cart = cache.get('cart-list', None)
+            if obj is None:
+                obj = CartItem.objects.all()
 
-        if obj_cart is None:
-            obj_cart = Cart.objects.all()
+            if obj_cart is None:
+                obj_cart = Cart.objects.all()
 
-        if request.user.is_superuser:
-            cart_item = obj.get(pk=pk)
-        else:
-            cart = obj_cart.get(user=request.user)
-            cart_item = obj.get(pk=pk, cart=cart)
+            if request.user.is_superuser:
+                cart_item = obj.get(pk=pk)
+            else:
+                cart = obj_cart.get(user=request.user)
+                cart_item = obj.get(pk=pk, cart=cart)
 
-        cart_item.delete()
-        return Response({'status': 'ok'}, status=200)
+            cart_item.delete()
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
         obj_cart = cache.get('cart-list', None)
@@ -88,28 +97,31 @@ class CartItemViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        obj = cache.get('cartItem-list', None)
-        obj_cart = cache.get('cart-list', None)
-        if obj is None:
-            obj = CartItem.objects.all()
+        try:
+            obj = cache.get('cartItem-list', None)
+            obj_cart = cache.get('cart-list', None)
+            if obj is None:
+                obj = CartItem.objects.all()
 
-        if obj_cart is None:
-            obj_cart = Cart.objects.all()
+            if obj_cart is None:
+                obj_cart = Cart.objects.all()
 
-        if request.user.is_superuser:
-            cartItem = obj.get(pk=pk)
-        else:
-            cart = obj_cart.get(user=request.user)
-            cartItem = obj.get(cart=cart)
-
-        serializer = CartItemDetailSerializers(cartItem, data=request.data)
-        if serializer.is_valid():
             if request.user.is_superuser:
-                serializer.save()
+                cartItem = obj.get(pk=pk)
             else:
-                serializer.save(cart=cart)
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+                cart = obj_cart.get(user=request.user)
+                cartItem = obj.get(cart=cart)
+
+            serializer = CartItemDetailSerializers(cartItem, data=request.data)
+            if serializer.is_valid():
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(cart=cart)
+                return Response({'status': 'ok'}, status=200)
+            return Response({'status': 'Internal Server Error'}, status=500)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
 
 class CartViews(ViewSet):
@@ -123,39 +135,48 @@ class CartViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-            cache.set('cart-list', obj)
-        if request.user.is_superuser:
-            cart = obj
-        else:
-            cart = obj.filter(user=request.user)
-        serializer = CartListSerializers(cart, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj = cache.get('cart-list', None)
+            if obj is None:
+                obj = Cart.objects.all()
+                cache.set('cart-list', obj)
+            if request.user.is_superuser:
+                cart = obj
+            else:
+                cart = obj.filter(user=request.user)
+            serializer = CartListSerializers(cart, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-            cache.set('cart-list', obj)
-        if request.user.is_superuser:
-            cart = obj.filter(pk=pk)
-        else:
-            cart = obj.filter(user=request.user, pk=pk)
-        serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj = cache.get('cart-list', None)
+            if obj is None:
+                obj = Cart.objects.all()
+                cache.set('cart-list', obj)
+            if request.user.is_superuser:
+                cart = obj.filter(pk=pk)
+            else:
+                cart = obj.filter(user=request.user, pk=pk)
+            serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def destroy(self, request, pk=None):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-        if request.user.is_superuser:
-            cart = obj.get(pk=pk)
-        else:
-            cart = obj.get(user=request.user, pk=pk)
-        cart.delete()
-        return Response({'status': 'ok'}, status=200)
+        try:
+            obj = cache.get('cart-list', None)
+            if obj is None:
+                obj = Cart.objects.all()
+            if request.user.is_superuser:
+                cart = obj.get(pk=pk)
+            else:
+                cart = obj.get(user=request.user, pk=pk)
+            cart.delete()
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
         try:
@@ -173,19 +194,22 @@ class CartViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        obj = cache.get('cart-list', None)
-        if obj is None:
-            obj = Cart.objects.all()
-        if request.user.is_superuser:
-            cart = obj.get(pk=pk)
-        else:
-            cart = obj.get(user=request.user, pk=pk)
-
-        serializer = CartDetailSerializers(cart, data=request.data)
-        if serializer.is_valid():
+        try:
+            obj = cache.get('cart-list', None)
+            if obj is None:
+                obj = Cart.objects.all()
             if request.user.is_superuser:
-                serializer.save()
+                cart = obj.get(pk=pk)
             else:
-                serializer.save(user=request.user)
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+                cart = obj.get(user=request.user, pk=pk)
+
+            serializer = CartDetailSerializers(cart, data=request.data)
+            if serializer.is_valid():
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(user=request.user)
+                return Response({'status': 'ok'}, status=200)
+            return Response({'status': 'Internal Server Error'}, status=500)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)

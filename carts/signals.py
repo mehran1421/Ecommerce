@@ -7,6 +7,7 @@ from .models import (
 )
 from django.db.models.signals import (
     pre_save,
+    pre_delete,
     post_save,
     post_delete
 )
@@ -21,21 +22,24 @@ def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
         instance.line_item_total = line_item_total
 
 
-@receiver([post_save, post_delete], sender=CartItem)
-def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
-    instance.cart.update_subtotal()
+@receiver(post_delete, sender=CartItem)
+def cart_item_pre_delete_receiver(sender, instance, *args, **kwargs):
     cache.delete('cartItem-list')
+    instance.cart.update_subtotal()
 
 
-@receiver([post_save, post_delete], sender=Cart)
+@receiver(post_save, sender=CartItem)
+def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
+    cache.delete('cartItem-list')
+    instance.cart.update_subtotal()
+
+
+@receiver(pre_delete, sender=Cart)
 def cart_post_save_receiver(sender, instance, *args, **kwargs):
     cache.delete('cart-list')
     cache.delete('cartItem-list')
 
 
-@receiver(pre_save, sender=Cart)
+@receiver(post_save, sender=Cart)
 def cart_pre_save_receiver(sender, instance, *args, **kwargs):
-    cart = Cart.objects.filter(user=instance.user)
-    count = cart.count()
-    if count == 1:
-        cart.delete()
+    cache.delete('cart-list')
