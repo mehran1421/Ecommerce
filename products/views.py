@@ -63,7 +63,6 @@ class ProductViews(ViewSet):
         return Response(serializer.data)
 
     def update(self, request, slug=None):
-        print(self.action)
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
         else:
@@ -81,14 +80,10 @@ class ProductViews(ViewSet):
     def destroy(self, request, slug=None):
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
-        elif request.user.is_authenticated:
-            product = Product.objects.get(slug=slug, seller=request.user)
-
-        if product.seller == request.user or request.user.is_superuser:
-            product.delete()
-            return Response({'status': 'ok'}, status=200)
         else:
-            return Response({'status': 'Bad Request'}, status=500)
+            product = Product.objects.get(slug=slug, seller=request.user)
+        product.delete()
+        return Response({'status': 'ok'}, status=200)
 
 
 class CategoryViews(ViewSet):
@@ -102,7 +97,6 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        global obj
         obj = cache.get('category-list', None)
         if obj is None:
             obj = Category.objects.filter(status=True)
@@ -111,6 +105,10 @@ class CategoryViews(ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
+        obj = cache.get('category-list', None)
+        if obj is None:
+            obj = Category.objects.filter(status=True)
+            cache.set('category-list', obj)
         queryset = obj.filter(slug=slug)
         serializer = CategorySerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -143,6 +141,10 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
+        obj = cache.get('category-list', None)
+        if obj is None:
+            obj = Category.objects.filter(status=True)
+            cache.set('category-list', obj)
         pro_obj = cache.get('product-list', None)
         queryset = obj.filter(slug=slug).first()
         if pro_obj is None:
