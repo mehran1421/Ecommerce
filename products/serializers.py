@@ -23,7 +23,30 @@ class FigureFieldSerializer(ModelSerializer):
         ]
 
 
-class CategorySerializer(ModelSerializer):
+class CategoryInputSerializer(ModelSerializer):
+    class Meta:
+        model = Category
+        fields = [
+            'title',
+            'slug',
+            'status',
+            'position',
+        ]
+
+
+class CategoryListSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='product:category-detail', lookup_field='slug')
+
+    class Meta:
+        model = Category
+        fields = [
+            'url',
+            'title',
+            'slug',
+        ]
+
+
+class CategoryDetailSerializer(ModelSerializer):
     """
     list category
     have a link for list product with selected category(product_category)
@@ -80,7 +103,7 @@ class ProductDetailSerializer(ModelSerializer):
     """
     product detail any things
     """
-    category = CategorySerializer(many=True)
+    category = CategoryListSerializer(many=True)
     images = SerializerMethodField()
 
     class Meta:

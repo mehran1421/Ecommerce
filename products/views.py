@@ -11,9 +11,11 @@ from .permissions import (
 )
 from .serializers import (
     ProductSerializer,
-    CategorySerializer,
     ProductDetailSerializer,
-    InputProductSerializers
+    InputProductSerializers,
+    CategoryDetailSerializer,
+    CategoryListSerializer,
+    CategoryInputSerializer
 )
 from .models import (
     Product,
@@ -122,18 +124,18 @@ class CategoryViews(ViewSet):
     def list(self, request):
         obj = cacheops(request, 'category-list', Category)
         category = obj.filter(status=True)
-        serializer = CategorySerializer(category, context={'request': request}, many=True)
+        serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
         obj = cacheops(request, 'category-list', Category)
         queryset = obj.filter(slug=slug, status=True)
-        serializer = CategorySerializer(queryset, context={'request': request}, many=True)
+        serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def create(self, request):
         try:
-            serializer = CategorySerializer(data=request.data)
+            serializer = CategoryInputSerializer(data=request.data)
             if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
             else:
