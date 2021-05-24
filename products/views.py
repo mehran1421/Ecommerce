@@ -20,6 +20,14 @@ from .models import (
 )
 
 
+def cacheops(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj
+
+
 class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
@@ -34,11 +42,9 @@ class ProductViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cache.get('product-list', None)
-        if obj is None:
-            obj = Product.objects.filter(status=True, choice='p')
-            cache.set('product-list', obj)
-        serializer = ProductSerializer(obj, context={'request': request}, many=True)
+        obj = cacheops(request, 'product-list', Product)
+        product = obj.filter(status=True, choice='p')
+        serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -54,11 +60,8 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        obj = cache.get('product-list', None)
-        if obj is None:
-            obj = Product.objects.filter(status=True, choice='p')
-            cache.set('product-list', obj)
-        queryset = obj.filter(slug=slug)
+        obj = cacheops(request, 'product-list', Product)
+        queryset = obj.filter(slug=slug, status=True, choice='p')
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -97,19 +100,14 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cache.get('category-list', None)
-        if obj is None:
-            obj = Category.objects.filter(status=True)
-            cache.set('category-list', obj)
-        serializer = CategorySerializer(obj, context={'request': request}, many=True)
+        obj = cacheops(request, 'category-list', Category)
+        category = obj.filter(status=True)
+        serializer = CategorySerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        obj = cache.get('category-list', None)
-        if obj is None:
-            obj = Category.objects.filter(status=True)
-            cache.set('category-list', obj)
-        queryset = obj.filter(slug=slug)
+        obj = cacheops(request, 'category-list', Category)
+        queryset = obj.filter(slug=slug, status=True)
         serializer = CategorySerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -141,15 +139,9 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
-        obj = cache.get('category-list', None)
-        if obj is None:
-            obj = Category.objects.filter(status=True)
-            cache.set('category-list', obj)
-        pro_obj = cache.get('product-list', None)
-        queryset = obj.filter(slug=slug).first()
-        if pro_obj is None:
-            products = Product.objects.filter(category=queryset)
-        else:
-            products = pro_obj.filter(category=queryset)
+        obj = cacheops(request, 'category-list', Category)
+        pro_obj = cacheops(request, 'product-list', Product)
+        queryset = obj.filter(slug=slug, status=True).first()
+        products = pro_obj.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
