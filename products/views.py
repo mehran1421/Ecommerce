@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from django.core.cache import cache
 from users.models import User
 from .pagination import PaginationTools
+from django.db.models import Q
 from .permissions import (
     IsSuperUserOrIsSeller,
     IsSuperUserOrReadonly
@@ -87,6 +88,25 @@ class ProductViews(ViewSet):
             product = Product.objects.get(slug=slug, seller=request.user)
         product.delete()
         return Response({'status': 'ok'}, status=200)
+
+    @action(detail=False, methods=['get'], name='products-search')
+    def product_search(self, request):
+        # http://localhost:8000/product/product_search/?search=mehran
+        obj = cacheops(request, 'cart-list', Product)
+        query = self.request.GET.get('search')
+        object_list = obj.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(price__iexact=query) |
+            Q(category__title__icontains=query) |
+            Q(seller__first_name__icontains=query) |
+            Q(seller__username__icontains=query) |
+            Q(seller__last_name__icontains=query),
+            status=True,
+            choice='p'
+        )
+        serializer = ProductSerializer(object_list, context={'request': request}, many=True)
+        return Response(serializer.data)
 
 
 class CategoryViews(ViewSet):
