@@ -140,7 +140,7 @@ class CartViews(ViewSet):
             if obj is None:
                 obj = Cart.objects.all()
                 cache.set('cart-list', obj)
-        
+
             cart = obj
             serializer = CartListSerializers(cart, context={'request': request}, many=True)
             return Response(serializer.data)
