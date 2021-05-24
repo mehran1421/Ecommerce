@@ -8,6 +8,8 @@ from datetime import datetime
 from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from django.db.models import Q
+from rest_framework.decorators import action
 
 MERCHANT = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
 client = Client('https://www.zarinpal.com/pg/services/WebGate/wsdl')
@@ -37,6 +39,21 @@ class PayViews(ViewSet):
             cache.set('cart-list', obj)
         queryset = obj.filter(pk=pk, is_pay=True)
         serializer = CartDetailSerializers(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], name='pay-search')
+    def pay_search(self, request):
+        # http://localhost:8000/payment/pay/pay_search/?search=ali
+        query = self.request.GET.get('search')
+        object_list = Cart.objects.filter(
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__username__icontains=query) |
+            Q(products__title__icontains=query) |
+            Q(products__title__icontains=query),
+            is_pay=True
+        )
+        serializer = CartListSerializers(object_list, context={'request': request}, many=True)
         return Response(serializer.data)
 
 
