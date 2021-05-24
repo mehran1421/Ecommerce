@@ -140,10 +140,8 @@ class CartViews(ViewSet):
             if obj is None:
                 obj = Cart.objects.all()
                 cache.set('cart-list', obj)
-            if request.user.is_superuser:
-                cart = obj
-            else:
-                cart = obj.filter(user=request.user)
+        
+            cart = obj
             serializer = CartListSerializers(cart, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
