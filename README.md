@@ -14,7 +14,7 @@ and get refresh access token and post request to `localhost:8000/cart/user/`with
 
 1. [Products](#products)
 2. [Cart](#carts)
-3. [Payment](#programming)
+3. [Payment](#payment)
 4. [User](#philosophy)
 
 # products
@@ -231,3 +231,31 @@ for example:
             return Response({'status': 'must you authentications '}, status=400)
 ```
 this code show list cartItem for user 
+for caching use this functions and for les than code
+```
+def cacheops(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj
+```
+# payment
+for payment user and show list carts with **is_pay=True**
+just superuser can run it
+##### `views.py:`
+###### def list(self, request):
+for shows carts list with **is_pay=True**
+###### def retrieve(self, request, pk=None):
+for detail cart 
+###### def pay_search(self, request):
+search in carts with **is_pay=True**
+* query for search:
+```
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__username__icontains=query) |
+            Q(products__title__icontains=query) |
+            Q(products__title__icontains=query),
+            is_pay=True
+```
