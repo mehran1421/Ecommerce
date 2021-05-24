@@ -108,3 +108,16 @@ class ProductDetailSerializer(ModelSerializer):
                 "{0}".format(count): i.image.url
             })
         return image
+
+
+class InputProductSerializers(ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'title',
+            'category',
+            'description',
+            'seller',
+            'thumbnail',
+            'price',
+        ]

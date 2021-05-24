@@ -1,6 +1,5 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import action
 from django.core.cache import cache
 from users.models import User
@@ -13,7 +12,8 @@ from .permissions import (
 from .serializers import (
     ProductSerializer,
     CategorySerializer,
-    ProductDetailSerializer
+    ProductDetailSerializer,
+    InputProductSerializers
 )
 from .models import (
     Product,
@@ -50,7 +50,7 @@ class ProductViews(ViewSet):
 
     def create(self, request):
         try:
-            serializer = ProductSerializer(data=request.data)
+            serializer = InputProductSerializers(data=request.data)
             if serializer.is_valid():
                 serializer.save(choice='d', status=False, seller=request.user)
             else:
