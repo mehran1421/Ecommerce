@@ -1,7 +1,6 @@
 from rest_framework.serializers import (
     ModelSerializer,
     HyperlinkedIdentityField,
-    SerializerMethodField
 )
 from django.contrib.auth import get_user_model
 

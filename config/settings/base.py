@@ -49,15 +49,14 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    # 'django.contrib.sites',
+    'django.contrib.sites',
     'rest_framework',
-    # 'allauth',
-    # 'allauth.account',
-    # 'allauth.socialaccount',
-    # 'dj_rest_auth.registration',
-    # 'django_filters',
-    # 'rest_framework.authtoken',
-    # 'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
 
     'drf_yasg',
 ]
@@ -95,19 +94,46 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# SITE_ID = 1
+SITE_ID = 1
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 }
-# REST_USE_JWT = True
-# JWT_AUTH_COOKIE = 'access'
-# JWT_AUTH_REFRESH_COOKIE = 'refresh'
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailSerializers',
+}
+
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+LOGIN_URL = 'http://localhost:8000/api/rest-auth/login/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_HOST = 'smtp.email.host'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = local.EMAIL_HOST_USER
+# EMAIL_HOST_PASSWORD = local.EMAIL_HOST_PASSWORD
+
+AUTHENTICATION_BACKENDS = [
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+# dj-rest-auth
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'access'
+JWT_AUTH_REFRESH_COOKIE = 'refresh'
+
+
+CUSTOM_PASSWORD_RESET_CONFIRM = 'desired URL'
 
 CACHES = {
     "default": {
