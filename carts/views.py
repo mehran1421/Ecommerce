@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from django.core.cache import cache
+from extension.utils import cacheops
 from .serializers import (
     CartItemListSerializers,
     CartItemDetailSerializers,
@@ -16,14 +16,6 @@ from .models import (
     Cart,
     CartItem
 )
-
-
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
 
 
 class CartItemViews(ViewSet):

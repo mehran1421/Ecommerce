@@ -1,5 +1,6 @@
 from . import jalali
 from django.utils import timezone
+from django.core.cache import cache
 
 
 def persian_number_converter(mystr):
@@ -42,3 +43,11 @@ def jalaly_converter(time):
         time.hour,
     )
     return persian_number_converter(output)
+
+
+def cacheops(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj

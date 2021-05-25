@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from django.core.cache import cache
 from users.models import User
 from .pagination import PaginationTools
+from extension.utils import cacheops
 from django.db.models import Q
 from .permissions import (
     IsSuperUserOrIsSeller,
@@ -23,14 +24,6 @@ from .models import (
     Category,
     FigureField
 )
-
-
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
 
 
 class ProductViews(ViewSet):

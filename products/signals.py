@@ -17,6 +17,6 @@ def pre_delete_receiver_product(sender, instance, *args, **kwargs):
     cache.delete('product-list')
 
 
-@receiver(pre_delete, sender=Category)
+@receiver([pre_delete, pre_save], sender=Category)
 def pre_delete_receiver_category(sender, instance, *args, **kwargs):
     cache.delete('category-list')
