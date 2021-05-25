@@ -106,7 +106,7 @@ REST_FRAMEWORK = {
 }
 
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailSerializers',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailJWTSerializers',
 }
 
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -131,7 +131,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'access'
 JWT_AUTH_REFRESH_COOKIE = 'refresh'
-
 
 CUSTOM_PASSWORD_RESET_CONFIRM = 'desired URL'
 
