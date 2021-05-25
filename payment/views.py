@@ -10,22 +10,20 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from django.db.models import Q
 from rest_framework.decorators import action
+from extension.utils import cacheops
 
-MERCHANT = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+try:
+    from config.settings.local import MERCHANT
+except Exception:
+    pass
+
+MERCHANT = MERCHANT
 client = Client('https://www.zarinpal.com/pg/services/WebGate/wsdl')
 amount = 1000  # Toman / Required
 description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"  # Required
 email = 'email@example.com'  # Optional
 mobile = '09123456789'  # Optional
 CallbackURL = 'http://localhost:8000/verify'  # Important: need to edit for realy server.
-
-
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
 
 
 class PayViews(ViewSet):

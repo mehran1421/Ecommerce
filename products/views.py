@@ -1,9 +1,6 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.core.cache import cache
-from users.models import User
-from .pagination import PaginationTools
 from extension.utils import cacheops
 from django.db.models import Q
 from .permissions import (
@@ -165,6 +162,8 @@ class CategoryViews(ViewSet):
 
 
 class FigureViews(ViewSet):
+    permission_classes = (IsSuperUserOrReadonly,)
+
     def list(self, request):
         obj = cacheops(request, 'figure-list', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
