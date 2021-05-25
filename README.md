@@ -15,7 +15,10 @@ and get refresh access token and post request to `localhost:8000/cart/user/`with
 1. [Products](#products)
 2. [Cart](#carts)
 3. [Payment](#payment)
-4. [User](#philosophy)
+4. [User](#user)
+
+# Directory
+1. [extension](#extension)
 
 # products
 
@@ -128,14 +131,6 @@ detail cart:
                     "slug": "shirt",
                     ....
             },
-            {
-                "url": "http://localhost:8000/cart/cartItem/71/",
-                "cart": 11,
-                "item": {
-                    "url": "http://localhost:8000/product/shirt/",
-                    "slug": "shirt",
-                   ....
-            }
         ],
         "products": [
             {
@@ -143,11 +138,6 @@ detail cart:
                 "slug": "shirt",
                 ....
             },
-            {
-                "url": "http://localhost:8000/product/shirt/",
-                "slug": "shirt",
-                ....
-            }
         ],
         "subtotal": "1.87",
         ....
@@ -159,17 +149,15 @@ there are each cart many cartItem object
 ```
 {
 list cartItem:
-
         "url": "http://localhost:8000/cart/cartItem/70/",
         "cart": 11,
         "item": {
             "url": "http://localhost:8000/product/shirt/",
             "slug": "shirt",
-            "title": "shirt",
            ....
         },
         "quantity": 4,
-        "line_item_total": "0.44"
+         ...
     },
    
 ```
@@ -243,7 +231,7 @@ def cacheops(request, name, model):
 # payment
 for payment user and show list carts with **is_pay=True**
 just superuser can run it
-##### `views.py:`
+* ### **views.py**
 ###### def list(self, request):
 for shows carts list with **is_pay=True**
 ###### def retrieve(self, request, pk=None):
@@ -259,3 +247,54 @@ search in carts with **is_pay=True**
             Q(products__title__icontains=query),
             is_pay=True
 ```
+
+# user
+* ### **models.py**
+inheritance AbstractUser for add custom field
+```
+    email = models.EmailField(unique=True, verbose_name='ایمیل')
+    is_seller=models.BooleanField(default=False,verbose_name='آیا کاربر فروشنده است')
+```
+password reset and register by email, then email is be different
+
+* ### **admin.py**
+by **UserAdmin.fieldsets[2][1]['fields']**, put Special field(email,is_seller)  in the desired places
+
+* ### **serializers.py**
+######`UserListSerializers:`
+for list user and Has fields (email,detail,is_seller,username)
+ 
+######`UserDetailSerializers:`
+all detail user for super user
+
+* ### **views.py**
+show list and detail user information by caching for superuser
+```
+    def list(self, request):
+        obj = cacheops(request, 'user-list', User)
+        serializer = UserListSerializers(obj, context={'request': request}, many=True)
+        return Response(serializer.data)
+```
+for Registration user by jwt show list with Low access for change data 
+```
+http://localhost:8000/api/rest-auth/user/
+```
+for use jwt:
+```
+https://www.rootstrap.com/blog/registration-and-authentication-in-django-apps-with-dj-rest-auth/
+https://dev.to/jkaylight/django-rest-framework-authentication-with-dj-rest-auth-4kli
+```
+
+# extension
+* ### **utils.py**
+there are two function:
+```
+def jalaly_converter(time):
+def cacheops(request, name, model):
+```
+`jalaly_converter:`
+###### this function convert Miladi date for jalali date
+for example : **2021-05-23** ==========> **2 خرداد 1400 , ساعت 40 : 20**
+
+`cacheops:`
+###### use cache in views.py for Low code
