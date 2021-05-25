@@ -35,7 +35,7 @@ class Category(models.Model):
     for example (کالای دیجیتال)
     '''
 
-    form_field = models.ManyToManyField(FigureField, blank=True, null=True,
+    form_field = models.ManyToManyField(FigureField, default=None, blank=True,
                                         verbose_name='فیلدها')
     position = models.IntegerField(verbose_name="پوزیشن")
 
