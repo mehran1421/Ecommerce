@@ -25,7 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = local.SECRET_KEY
+try:
+    from .keys import SECRET_KEY
+except Exception:
+    pass
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -57,7 +60,6 @@ LOCAL_APPS = [
     'dj_rest_auth.registration',
     'rest_framework.authtoken',
     'dj_rest_auth',
-
     'drf_yasg',
 ]
 
@@ -169,10 +171,11 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': local.POSTGRES_NAME,
-        'USER': local.POSTGRES_USER,
-        'PASSWORD': local.POSTGRES_PASSWORD,
-        'HOST': local.POSTGRES_HOST
+        'NAME': 'DB_NAME',
+        'USER': 'DB_USER',
+        'PASSWORD': 'DB_PASS',
+        'HOST': 'postgres',
+        'PORT': '5432',
     }
 }
 
