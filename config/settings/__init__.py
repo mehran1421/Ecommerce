@@ -1,13 +1,6 @@
-from .base import *
+env_name = 'dev'
 
-from .development import *
-
-try:
-    from .local import *
-except:
-    pass
-
-try:
+if env_name == 'prod':
     from .production import *
-except:
-    pass
+elif env_name == 'dev':
+    from .development import *
