@@ -2,6 +2,7 @@ from carts.permissions import IsSuperUser
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from zeep import Client
+from django.db.models import Q
 from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
@@ -108,6 +109,26 @@ class Factors(ViewSet):
             return Response({'status': 'ok'}, status=200)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
+
+    @action(detail=False, methods=['get'], name='factor-search')
+    def pay_search(self, request):
+        # http://localhost:8000/payment/factor/pay_search/?search=mehran
+        obj = cacheops(request, 'cart-list', Cart)
+        query = self.request.GET.get('search')
+        object_list = obj.filter(
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__username__icontains=query) |
+            Q(products__title__icontains=query) |
+            Q(products__title__icontains=query),
+            is_pay=True
+        )
+        if request.user.is_superuser:
+            serializer = CartListSerializers(object_list, context={'request': request}, many=True)
+        else:
+            objUser = object_list.filter(user=request.user)
+            serializer = CartListSerializers(objUser, context={'request': request}, many=True)
+        return Response(serializer.data)
 
 
 def send_request(request):
