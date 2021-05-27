@@ -1,16 +1,18 @@
-from carts.models import Cart
-from carts.serializers import CartListSerializers, CartDetailSerializers
 from carts.permissions import IsSuperUser
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from zeep import Client
 from datetime import datetime
-from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from extension.utils import cacheops
-from carts.models import Cart, CartItem
+from carts.models import Cart
+from carts.serializers import (
+    CartListSerializers,
+    CartDetailSerializers
+)
 
 try:
     from config.settings.keys import MERCHANT
@@ -30,6 +32,13 @@ class Factors(ViewSet):
     list and retrieve Carts that is_pay=True and
     user=request.user
     """
+
+    def get_permissions(self):
+        if self.action in ['destroy', 'update']:
+            permission_classes = (IsSuperUser,)
+        else:
+            permission_classes = (IsAuthenticated,)
+        return [permission() for permission in permission_classes]
 
     def list(self, request):
         """
