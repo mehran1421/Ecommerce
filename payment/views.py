@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from extension.utils import cacheops
 
 try:
-    from config.settings.local import MERCHANT
+    from config.settings.keys import MERCHANT
 except Exception:
     MERCHANT = "Some kind of hash"
 

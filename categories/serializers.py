@@ -34,7 +34,7 @@ class CategoryInputSerializer(ModelSerializer):
 
 
 class CategoryListSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='product:category-detail', lookup_field='slug')
+    url = HyperlinkedIdentityField(view_name='category:category-detail', lookup_field='slug')
 
     class Meta:
         model = Category
@@ -51,7 +51,7 @@ class CategoryDetailSerializer(ModelSerializer):
     have a link for list product with selected category(product_category)
     """
     forms_field = SerializerMethodField()
-    product_category = HyperlinkedIdentityField(view_name='product:category-product-category', lookup_field='slug')
+    product_category = HyperlinkedIdentityField(view_name='category:category-product-category', lookup_field='slug')
 
     class Meta:
         model = Category

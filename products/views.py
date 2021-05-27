@@ -11,15 +11,9 @@ from .serializers import (
     ProductSerializer,
     ProductDetailSerializer,
     InputProductSerializers,
-    CategoryDetailSerializer,
-    CategoryListSerializer,
-    CategoryInputSerializer,
-    FigureFieldSerializer
 )
 from .models import (
     Product,
-    Category,
-    FigureField
 )
 
 
