@@ -25,7 +25,7 @@ mobile = '09123456789'  # Optional
 CallbackURL = 'http://localhost:8000/verify'  # Important: need to edit for realy server.
 
 
-class Factor(ViewSet):
+class Factors(ViewSet):
     """
     list and retrieve Carts that is_pay=True and
     user=request.user
@@ -34,12 +34,16 @@ class Factor(ViewSet):
     def list(self, request):
         """
         just for user
+        and superuser can show all carts that is_pay=True
         :param request:
         :return: list carts that is_pay=True
         """
         try:
             obj_cart = cacheops(request, 'cart-list', Cart)
-            cart_obj = obj_cart.filter(user=request.user, is_pay=True)
+            if request.user.is_superuser:
+                cart_obj = obj_cart.filter(is_pay=True)
+            else:
+                cart_obj = obj_cart.filter(user=request.user, is_pay=True)
             serializer = CartListSerializers(cart_obj, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -48,15 +52,51 @@ class Factor(ViewSet):
     def retrieve(self, request, pk=None):
         """
         just for user that is_pay=True
+        and superuser can show all carts that is_pay=True
         :param request:
         :param pk:
         :return: detail carts that is_pay=True
         """
         try:
             obj_cart = cacheops(request, 'cart-list', Cart)
-            cart_obj = obj_cart.get(pk=pk, user=request.user, is_pay=True)
+            if request.user.is_superuser:
+                cart_obj = obj_cart.get(pk=pk, is_pay=True)
+            else:
+                cart_obj = obj_cart.get(pk=pk, user=request.user, is_pay=True)
             serializer = CartDetailSerializers(cart_obj, context={'request': request}, many=True)
             return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
+
+    def update(self, request, pk=None):
+        """
+        just superuser can update list carts that is_pay=True
+        :param request:
+        :param pk:
+        :return: update object with pk=pk
+        """
+        try:
+            obj = cacheops(request, 'cart-list', Cart)
+            cart = obj.get(pk=pk, is_pay=True)
+            serializer = CartDetailSerializers(cart, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'status': 'ok'}, status=200)
+            return Response({'status': 'Internal Server Error'}, status=500)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
+
+    def destroy(self, request, pk=None):
+        """
+        just super user can delete it
+        :param request:
+        :param pk:
+        :return: delete object with pk=pk and is_pay=True
+        """
+        try:
+            obj = cacheops(request, 'cart-list', Cart)
+            obj.get(pk=pk, is_pay=True).delete()
+            return Response({'status': 'ok'}, status=200)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
