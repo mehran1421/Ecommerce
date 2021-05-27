@@ -22,11 +22,12 @@ def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
         instance.line_item_total = line_item_total
 
 
-@receiver(post_delete, sender=CartItem)
+@receiver(pre_delete, sender=CartItem)
 def cart_item_pre_delete_receiver(sender, instance, *args, **kwargs):
     cache.delete('cartItem-list')
-    if not instance.cart.is_pay:
-        instance.cart.update_subtotal()
+    price_cart_item = instance.line_item_total
+    instance.cart.subtotal -= price_cart_item
+    instance.cart.save()
 
 
 @receiver(post_save, sender=CartItem)
