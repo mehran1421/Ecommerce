@@ -40,7 +40,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True, verbose_name='سبد خرید')
     item = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, verbose_name='محصول')
     quantity = models.PositiveIntegerField(default=1)
-    line_item_total = models.DecimalField(max_digits=10, decimal_places=2)
+    line_item_total = models.DecimalField(null=True, blank=True, max_digits=10, decimal_places=2)
 
     def __str__(self):
         return self.item.title
