@@ -25,7 +25,8 @@ def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=CartItem)
 def cart_item_pre_delete_receiver(sender, instance, *args, **kwargs):
     cache.delete('cartItem-list')
-    instance.cart.update_subtotal()
+    if not instance.cart.is_pay:
+        instance.cart.update_subtotal()
 
 
 @receiver(post_save, sender=CartItem)

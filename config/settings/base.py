@@ -22,6 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 try:
     from .keys import SECRET_KEY
+    from .local import *
 except Exception:
     pass
 
@@ -41,6 +42,7 @@ DEFAULT_APP = [
 
 THIRD_PARTY_APPS = [
     'products.apps.ProductsAppConfig',
+    'categories.apps.CategoriesConfig',
     'users.apps.MyUserConfig',
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',
@@ -166,10 +168,10 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'DB_NAME',
-        'USER': 'DB_USER',
-        'PASSWORD': 'DB_PASS',
-        'HOST': 'postgres',
+        'NAME': POSTGRES_NAME,
+        'USER': POSTGRES_USER,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': POSTGRES_HOST,
         'PORT': '5432',
     }
 }
