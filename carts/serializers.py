@@ -11,7 +11,6 @@ class CartItemInputSerializers(ModelSerializer):
             'cart',
             'item',
             'quantity',
-            'line_item_total',
         ]
 
 

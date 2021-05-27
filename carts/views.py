@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from extension.utils import cacheops
+from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     CartItemListSerializers,
     CartItemDetailSerializers,
@@ -23,7 +24,7 @@ class CartItemViews(ViewSet):
         if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrSelfObject,)
         else:
-            permission_classes = ()
+            permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
 
     def list(self, request):
@@ -112,7 +113,8 @@ class CartViews(ViewSet):
     def list(self, request):
         obj = cacheops(request, 'cart-list', Cart)
         try:
-            serializer = CartListSerializers(obj, context={'request': request}, many=True)
+            queryset = obj.filter(is_pay=False)
+            serializer = CartListSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
@@ -121,9 +123,9 @@ class CartViews(ViewSet):
         obj = cacheops(request, 'cart-list', Cart)
         try:
             if request.user.is_superuser:
-                cart = obj.filter(pk=pk)
+                cart = obj.filter(is_pay=False, pk=pk)
             else:
-                cart = obj.filter(user=request.user, pk=pk)
+                cart = obj.filter(is_pay=False, user=request.user, pk=pk)
             serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -133,9 +135,9 @@ class CartViews(ViewSet):
         obj = cacheops(request, 'cart-list', Cart)
         try:
             if request.user.is_superuser:
-                cart = obj.get(pk=pk)
+                cart = obj.get(is_pay=False, pk=pk)
             else:
-                cart = obj.get(user=request.user, pk=pk)
+                cart = obj.get(is_pay=False, user=request.user, pk=pk)
             cart.delete()
             return Response({'status': 'ok'}, status=200)
         except Exception:
@@ -148,7 +150,7 @@ class CartViews(ViewSet):
                 if request.user.is_superuser:
                     serializer.save()
                 else:
-                    serializer.save(user=request.user)
+                    serializer.save(is_pay=False, user=request.user)
             else:
                 return Response({'status': 'Bad Request'}, status=400)
 
@@ -160,9 +162,9 @@ class CartViews(ViewSet):
         obj = cacheops(request, 'cart-list', Cart)
         try:
             if request.user.is_superuser:
-                cart = obj.get(pk=pk)
+                cart = obj.get(is_pay=False, pk=pk)
             else:
-                cart = obj.get(user=request.user, pk=pk)
+                cart = obj.get(is_pay=False, user=request.user, pk=pk)
 
             serializer = CartDetailSerializers(cart, data=request.data)
             if serializer.is_valid():
