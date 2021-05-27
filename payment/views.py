@@ -15,9 +15,8 @@ from extension.utils import cacheops
 try:
     from config.settings.local import MERCHANT
 except Exception:
-    pass
+    MERCHANT = "Some kind of hash"
 
-MERCHANT = MERCHANT
 client = Client('https://www.zarinpal.com/pg/services/WebGate/wsdl')
 amount = 1000  # Toman / Required
 description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"  # Required
