@@ -8,9 +8,9 @@ from datetime import datetime
 from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from django.db.models import Q
 from rest_framework.decorators import action
 from extension.utils import cacheops
+from carts.models import Cart, CartItem
 
 try:
     from config.settings.keys import MERCHANT
@@ -25,36 +25,40 @@ mobile = '09123456789'  # Optional
 CallbackURL = 'http://localhost:8000/verify'  # Important: need to edit for realy server.
 
 
-class PayViews(ViewSet):
-    permission_classes = (IsSuperUser,)
+class Factor(ViewSet):
+    """
+    list and retrieve Carts that is_pay=True and
+    user=request.user
+    """
 
     def list(self, request):
-        obj = cacheops(request, 'cart-list', Cart)
-        cart = obj.filter(is_pay=True)
-        serializer = CartListSerializers(cart, context={'request': request}, many=True)
-        return Response(serializer.data)
+        """
+        just for user
+        :param request:
+        :return: list carts that is_pay=True
+        """
+        try:
+            obj_cart = cacheops(request, 'cart-list', Cart)
+            cart_obj = obj_cart.filter(user=request.user, is_pay=True)
+            serializer = CartListSerializers(cart_obj, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
-        obj = cacheops(request, 'cart-list', Cart)
-        queryset = obj.filter(pk=pk, is_pay=True)
-        serializer = CartDetailSerializers(queryset, context={'request': request}, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'], name='pay-search')
-    def pay_search(self, request):
-        # http://localhost:8000/payment/pay/pay_search/?search=ali
-        obj = cacheops(request, 'cart-list', Cart)
-        query = self.request.GET.get('search')
-        object_list = obj.filter(
-            Q(user__first_name__icontains=query) |
-            Q(user__last_name__icontains=query) |
-            Q(user__username__icontains=query) |
-            Q(products__title__icontains=query) |
-            Q(products__title__icontains=query),
-            is_pay=True
-        )
-        serializer = CartListSerializers(object_list, context={'request': request}, many=True)
-        return Response(serializer.data)
+        """
+        just for user that is_pay=True
+        :param request:
+        :param pk:
+        :return: detail carts that is_pay=True
+        """
+        try:
+            obj_cart = cacheops(request, 'cart-list', Cart)
+            cart_obj = obj_cart.get(pk=pk, user=request.user, is_pay=True)
+            serializer = CartDetailSerializers(cart_obj, context={'request': request}, many=True)
+            return Response(serializer.data)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
 
 
 def send_request(request):

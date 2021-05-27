@@ -1,10 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PayViews, send_request, verify
+from .views import send_request, verify, Factor
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
-router.register(r'pay', PayViews, basename='payment')
+router.register(r'factor', Factor, basename='factor')
 
 # The API URLs are now determined automatically by the router.
 app_name = 'pay'
