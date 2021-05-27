@@ -30,7 +30,6 @@ class Cart(models.Model):
     def update_subtotal(self):
         subtotal = 0
         items = self.cartitem_set.all()
-        print(items)
         for item in items:
             subtotal += item.line_item_total
         self.subtotal = "%.2f" % (subtotal)

@@ -16,7 +16,7 @@ from django.db.models.signals import (
 @receiver(pre_save, sender=CartItem)
 def cart_item_pre_save_receiver(sender, instance, *args, **kwargs):
     qty = instance.quantity
-    if qty >= 1:
+    if qty >= 1 and not instance.cart.is_pay:
         price = instance.item.price
         line_item_total = Decimal(qty) * Decimal(price)
         instance.line_item_total = line_item_total
@@ -31,7 +31,8 @@ def cart_item_pre_delete_receiver(sender, instance, *args, **kwargs):
 @receiver(post_save, sender=CartItem)
 def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
     cache.delete('cartItem-list')
-    instance.cart.update_subtotal()
+    if not instance.cart.is_pay:
+        instance.cart.update_subtotal()
 
 
 @receiver(pre_delete, sender=Cart)
