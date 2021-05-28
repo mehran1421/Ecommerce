@@ -32,9 +32,9 @@ class CartItemViews(ViewSet):
             obj = cacheCartItem(request, 'cartItem-list', CartItem)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             if request.user.is_superuser:
-                query = obj.all()
+                query = obj
             else:
-                cart_obj = obj_cart.filter(user=request.user).first()
+                cart_obj = obj_cart.filter(user=request.user, is_pay=False).first()
                 query = obj.filter(cart=cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -48,7 +48,7 @@ class CartItemViews(ViewSet):
             if request.user.is_superuser:
                 queryset = obj.filter(pk=pk)
             else:
-                cart_obj = obj_cart.filter(user=request.user).first()
+                cart_obj = obj_cart.filter(user=request.user, is_pay=False).first()
                 queryset = obj.filter(pk=pk, cart=cart_obj)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -62,7 +62,7 @@ class CartItemViews(ViewSet):
             if request.user.is_superuser:
                 cart_item = obj.get(pk=pk)
             else:
-                cart = obj_cart.get(user=request.user)
+                cart = obj_cart.get(user=request.user, is_pay=False)
                 cart_item = obj.get(pk=pk, cart=cart)
 
             cart_item.delete()
@@ -74,7 +74,7 @@ class CartItemViews(ViewSet):
         obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             serializer = CartItemInputSerializers(data=request.data)
-            cart = obj_cart.get(user=request.user)
+            cart = obj_cart.get(user=request.user, is_pay=False)
             if serializer.is_valid():
                 if request.user.is_superuser:
                     serializer.save()
@@ -94,7 +94,7 @@ class CartItemViews(ViewSet):
             if request.user.is_superuser:
                 cartItem = obj.get(pk=pk)
             else:
-                cart = obj_cart.get(user=request.user)
+                cart = obj_cart.get(user=request.user, is_pay=False)
                 cartItem = obj.get(cart=cart)
 
             serializer = CartItemDetailSerializers(cartItem, data=request.data)
@@ -122,7 +122,10 @@ class CartViews(ViewSet):
     def list(self, request):
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
-            queryset = obj.filter(is_pay=False)
+            if request.user.is_superuser:
+                queryset = Cart.objects.filter(is_pay=False)
+            else:
+                queryset = obj.filter(is_pay=False)
             serializer = CartListSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -132,7 +135,7 @@ class CartViews(ViewSet):
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = obj.filter(is_pay=False, pk=pk)
+                cart = Cart.objects.filter(pk=pk)
             else:
                 cart = obj.filter(is_pay=False, user=request.user, pk=pk)
             serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
@@ -144,7 +147,7 @@ class CartViews(ViewSet):
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = obj.get(is_pay=False, pk=pk)
+                cart = Cart.objects.get(pk=pk)
             else:
                 cart = obj.get(is_pay=False, user=request.user, pk=pk)
             cart.delete()
@@ -154,8 +157,10 @@ class CartViews(ViewSet):
 
     def create(self, request):
         try:
+            cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+            lenCart = cart.objects.filter(is_pay=False).count()
             serializer = CartInputSerializers(data=request.data)
-            if serializer.is_valid():
+            if serializer.is_valid() and lenCart == 0:
                 if request.user.is_superuser:
                     serializer.save()
                 else:
@@ -171,7 +176,7 @@ class CartViews(ViewSet):
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = obj.get(is_pay=False, pk=pk)
+                cart = Cart.objects.get(pk=pk)
             else:
                 cart = obj.get(is_pay=False, user=request.user, pk=pk)
 
