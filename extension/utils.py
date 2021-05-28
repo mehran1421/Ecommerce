@@ -56,8 +56,12 @@ def cacheProduct(request, name, model):
     return obj
 
 
-def cacheCart(request, name, model):
-    pass
+def cacheCart(request, name, model, user):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.filter(user=user)
+        cache.set(f"cart_{user.email}", obj)
+    return obj
 
 
 '''
