@@ -51,7 +51,7 @@ def jalaly_converter(time):
 def cacheProduct(request, name, model):
     obj = caches['products'].get(name, None)
     if obj is None:
-        obj = model.objects.filter(status=True, choice='p')
+        obj = model.objects.all()
         caches['products'].set(name, obj)
     return obj
 
@@ -61,6 +61,14 @@ def cacheCart(request, name, model, user):
     if obj is None:
         obj = model.objects.filter(user=user)
         cache.set(f"cart_{user.email}", obj)
+    return obj
+
+
+def cacheCartItem(request, name, model):
+    obj = caches['cartItems'].get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
     return obj
 
 
