@@ -41,8 +41,7 @@ DEFAULT_APP = [
 ]
 
 THIRD_PARTY_APPS = [
-    'products.apps.ProductsAppConfig',
-    'categories.apps.CategoriesConfig',
+    'items.apps.ProductsAppConfig',
     'users.apps.MyUserConfig',
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',

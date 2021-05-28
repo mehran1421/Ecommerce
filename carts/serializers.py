@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from .models import Cart, CartItem
 from users.serializers import UserListSerializers
-from products.serializers import ProductSerializer, ProductDetailSerializer
+from items.serializers import ProductSerializer, ProductDetailSerializer
 
 
 class CartItemInputSerializers(ModelSerializer):
@@ -19,7 +19,7 @@ class CartInputSerializers(ModelSerializer):
         model = CartItem
         fields = [
             'user',
-            'products',
+            'items',
         ]
 
 
@@ -83,7 +83,7 @@ class CartDetailSerializers(ModelSerializer):
             'user',
             'cart_item',
             # 'pay',
-            'products',
+            'items',
             'subtotal',
             'total',
             'timestamp',

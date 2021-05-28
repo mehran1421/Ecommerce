@@ -5,7 +5,7 @@ from .models import Cart, CartItem
 class CartAdmin(admin.ModelAdmin):
     list_display = ('user', 'subtotal', 'total', 'timestamp',)
     list_filter = (['user', 'subtotal'])
-    search_fields = ('user__first_name', 'user__last_name', 'subtotal', 'products')
+    search_fields = ('user__first_name', 'user__last_name', 'subtotal', 'items')
     list_editable = ['subtotal', 'total']
 
 

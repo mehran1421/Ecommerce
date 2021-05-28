@@ -29,7 +29,7 @@ schema_view = get_schema_view(
         default_version='v1',
         description="Test description",
         terms_of_service="https://www.products.com/policies/terms/",
-        contact=openapi.Contact(email="contact@products.local"),
+        contact=openapi.Contact(email="contact@items.local"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,
@@ -38,8 +38,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('products.urls')),
-    path('categories/', include('categories.urls')),
+    path('', include('items.urls')),
     path('auth/', include('users.urls')),
     path('cart/', include('carts.urls')),
     path('payment/', include('payment.urls')),

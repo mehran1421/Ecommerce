@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import User
-from products.models import Product
+from items.models import Product
 from django.db.models.signals import pre_save, post_save, post_delete
 
 
