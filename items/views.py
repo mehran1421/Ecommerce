@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from extension.utils import cacheops
+from extension.utils import cacheProduct
 from django.db.models import Q
 from .permissions import (
     IsSuperUserOrIsSeller,
@@ -37,7 +37,7 @@ class ProductViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cacheops(request, 'product-list', Product)
+        obj = cacheProduct(request, 'product-list', Product)
         product = obj.filter(status=True, choice='p')
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -55,7 +55,7 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        obj = cacheops(request, 'product-list', Product)
+        obj = cacheProduct(request, 'product-list', Product)
         queryset = obj.filter(slug=slug, status=True, choice='p')
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -86,7 +86,7 @@ class ProductViews(ViewSet):
     @action(detail=False, methods=['get'], name='items-search')
     def product_search(self, request):
         # http://localhost:8000/product/product_search/?search=mehran
-        obj = cacheops(request, 'cart-list', Product)
+        obj = cacheProduct(request, 'cart-list', Product)
         query = self.request.GET.get('search')
         object_list = obj.filter(
             Q(title__icontains=query) |
@@ -114,13 +114,13 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cacheops(request, 'category-list', Category)
+        obj = cacheProduct(request, 'category-list', Category)
         category = obj.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        obj = cacheops(request, 'category-list', Category)
+        obj = cacheProduct(request, 'category-list', Category)
         queryset = obj.filter(slug=slug, status=True)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -153,8 +153,8 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
-        obj = cacheops(request, 'category-list', Category)
-        pro_obj = cacheops(request, 'product-list', Product)
+        obj = cacheProduct(request, 'category-list', Category)
+        pro_obj = cacheProduct(request, 'product-list', Product)
         queryset = obj.filter(slug=slug, status=True).first()
         products = pro_obj.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
@@ -165,12 +165,12 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
-        obj = cacheops(request, 'figure-list', FigureField)
+        obj = cacheProduct(request, 'figure-list', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        obj = cacheops(request, 'figure-list', FigureField)
+        obj = cacheProduct(request, 'figure-list', FigureField)
         queryset = obj.filter(pk=pk)
         serializer = FigureFieldSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
