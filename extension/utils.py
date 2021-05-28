@@ -2,7 +2,7 @@ import random
 import string
 from . import jalali
 from django.utils import timezone
-from django.core.cache import cache
+from django.core.cache import caches, cache
 from django.utils.text import slugify
 
 
@@ -48,12 +48,16 @@ def jalaly_converter(time):
     return persian_number_converter(output)
 
 
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
+def cacheProduct(request, name, model):
+    obj = caches['products'].get(name, None)
     if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
+        obj = model.objects.filter(status=True, choice='p')
+        caches['products'].set(name, obj)
     return obj
+
+
+def cacheCart(request, name, model):
+    pass
 
 
 '''
