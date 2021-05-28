@@ -134,14 +134,9 @@ CUSTOM_PASSWORD_RESET_CONFIRM = 'desired URL'
 
 CACHES = {
     "default": {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'TIMEOUT': 60 * 60 * 24
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
         },
-    }
-
 }
 
 # Password validation
