@@ -140,6 +140,10 @@ CACHES = {
     'products': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'products_status_True',
+    },
+    'cartItems': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': 'd:/cartItem',
     }
 }
 
