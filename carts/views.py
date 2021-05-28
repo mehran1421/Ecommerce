@@ -31,8 +31,11 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCartItem(request, 'cartItem-list', CartItem)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-            cart_obj = obj_cart.filter(user=request.user).first()
-            query = obj.filter(cart=cart_obj)
+            if request.user.is_superuser:
+                query = obj.all()
+            else:
+                cart_obj = obj_cart.filter(user=request.user).first()
+                query = obj.filter(cart=cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -40,10 +43,13 @@ class CartItemViews(ViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            obj = cacheops(request, 'cartItem-list', CartItem)
+            obj = cacheCartItem(request, 'cartItem-list', CartItem)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-            cart_obj = obj_cart.filter(user=request.user).first()
-            queryset = obj.filter(pk=pk, cart=cart_obj)
+            if request.user.is_superuser:
+                queryset = obj.filter(pk=pk)
+            else:
+                cart_obj = obj_cart.filter(user=request.user).first()
+                queryset = obj.filter(pk=pk, cart=cart_obj)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -51,7 +57,7 @@ class CartItemViews(ViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            obj = cacheops(request, 'cartItem-list', CartItem)
+            obj = cacheCartItem(request, 'cartItem-list', CartItem)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             if request.user.is_superuser:
                 cart_item = obj.get(pk=pk)
@@ -70,7 +76,10 @@ class CartItemViews(ViewSet):
             serializer = CartItemInputSerializers(data=request.data)
             cart = obj_cart.get(user=request.user)
             if serializer.is_valid():
-                serializer.save(cart=cart)
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(cart=cart)
             else:
                 return Response({'status': 'Bad Request'}, status=400)
 
@@ -79,7 +88,7 @@ class CartItemViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        obj = cacheops(request, 'cartItem-list', CartItem)
+        obj = cacheCartItem(request, 'cartItem-list', CartItem)
         obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
