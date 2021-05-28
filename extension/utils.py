@@ -59,7 +59,10 @@ def cacheProduct(request, name, model):
 def cacheCart(request, name, model, user):
     obj = cache.get(name, None)
     if obj is None:
-        obj = model.objects.filter(user=user)
+        if user.is_superuser:
+            obj = model.objects.all()
+        else:
+            obj = model.objects.filter(user=user)
         cache.set(f"cart_{user.email}", obj)
     return obj
 
