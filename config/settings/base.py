@@ -215,3 +215,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # for custom user models
 AUTH_USER_MODEL = 'users.User'
+
+DATABASES_ROUTERS = ['routers.db_routers.CacheDatabase', ]

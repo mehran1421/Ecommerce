@@ -1,4 +1,4 @@
-class CachDatabase:
+class CacheDatabase:
     def db_for_read(self, model, **hints):
         if model.__meta.app_label == 'items':
             return 'products_cache'
