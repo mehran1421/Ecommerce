@@ -175,6 +175,14 @@ DATABASES = {
         'PASSWORD': POSTGRES_PASSWORD,
         'HOST': POSTGRES_HOST,
         'PORT': '5432',
+    },
+    'products_cache': {
+        'ENGINE': 'djongo',
+        'NAME': 'your - db - name',
+        'host': 'localhost',
+        'port': '27017',
+        'username': 'user_name',
+        'password': 'password',
     }
 }
 
