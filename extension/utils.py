@@ -2,7 +2,7 @@ import random
 import string
 from . import jalali
 from django.utils import timezone
-from django.core.cache import cache
+from django.core.cache import caches, cache
 from django.utils.text import slugify
 
 
@@ -48,6 +48,33 @@ def jalaly_converter(time):
     return persian_number_converter(output)
 
 
+<<<<<<< HEAD
+=======
+def cacheProduct(request, name, model):
+    obj = caches['products'].get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        caches['products'].set(name, obj)
+    return obj
+
+
+def cacheCart(request, name, model, user):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.filter(user=user)
+        cache.set(f"cart_{user.email}", obj)
+    return obj
+
+
+def cacheCartItem(request, name, model):
+    obj = caches['cartItems'].get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        caches['cartItems'].set(name, obj)
+    return obj
+
+
+>>>>>>> djcache
 '''
 random_string_generator is located here:
 http://joincfe.com/blog/random-string-generator-in-python/
