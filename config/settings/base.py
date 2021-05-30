@@ -137,13 +137,13 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': '127.0.0.1:11211',
     },
-    'products': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'products_status_True',
-    },
     'cartItems': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': 'd:/cartItem',
+    },
+    'products': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'items',
     }
 }
 
@@ -175,14 +175,6 @@ DATABASES = {
         'PASSWORD': POSTGRES_PASSWORD,
         'HOST': POSTGRES_HOST,
         'PORT': '5432',
-    },
-    'products_cache': {
-        'ENGINE': 'djongo',
-        'NAME': 'your - db - name',
-        'host': 'localhost',
-        'port': '27017',
-        'username': 'user_name',
-        'password': 'password',
     }
 }
 
