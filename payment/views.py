@@ -2,13 +2,14 @@ from carts.permissions import IsSuperUser
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from zeep import Client
+from .serializers import FactorListSerializers, FactorDetailSerializers
 from django.db.models import Q
 from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from extension.utils import cacheops
+from extension.utils import cacheCart
 from carts.models import Cart
 from carts.serializers import (
     CartListSerializers,
@@ -49,12 +50,13 @@ class Factors(ViewSet):
         :return: list carts that is_pay=True
         """
         try:
-            obj_cart = cacheops(request, 'cart-list', Cart)
+
             if request.user.is_superuser:
-                cart_obj = obj_cart.filter(is_pay=True)
+                cart_obj = Cart.objects.filter(is_pay=True)
             else:
+                obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart_obj = obj_cart.filter(user=request.user, is_pay=True)
-            serializer = CartListSerializers(cart_obj, context={'request': request}, many=True)
+            serializer = FactorListSerializers(cart_obj, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
@@ -68,12 +70,13 @@ class Factors(ViewSet):
         :return: detail carts that is_pay=True
         """
         try:
-            obj_cart = cacheops(request, 'cart-list', Cart)
             if request.user.is_superuser:
-                cart_obj = obj_cart.get(pk=pk, is_pay=True)
+                cart_obj = Cart.objects.get(pk=pk, is_pay=True)
             else:
+                obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart_obj = obj_cart.get(pk=pk, user=request.user, is_pay=True)
-            serializer = CartDetailSerializers(cart_obj, context={'request': request}, many=True)
+
+            serializer = FactorDetailSerializers(cart_obj)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
@@ -86,8 +89,7 @@ class Factors(ViewSet):
         :return: update object with pk=pk
         """
         try:
-            obj = cacheops(request, 'cart-list', Cart)
-            cart = obj.get(pk=pk, is_pay=True)
+            cart = Cart.objects.get(pk=pk, is_pay=True)
             serializer = CartDetailSerializers(cart, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -104,8 +106,7 @@ class Factors(ViewSet):
         :return: delete object with pk=pk and is_pay=True
         """
         try:
-            obj = cacheops(request, 'cart-list', Cart)
-            obj.get(pk=pk, is_pay=True).delete()
+            Cart.objects.get(pk=pk, is_pay=True).delete()
             return Response({'status': 'ok'}, status=200)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
@@ -113,7 +114,7 @@ class Factors(ViewSet):
     @action(detail=False, methods=['get'], name='factor-search')
     def pay_search(self, request):
         # http://localhost:8000/payment/factor/pay_search/?search=mehran
-        obj = cacheops(request, 'cart-list', Cart)
+        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         query = self.request.GET.get('search')
         object_list = obj.filter(
             Q(user__first_name__icontains=query) |
@@ -121,7 +122,8 @@ class Factors(ViewSet):
             Q(user__username__icontains=query) |
             Q(products__title__icontains=query) |
             Q(products__title__icontains=query),
-            is_pay=True
+            is_pay=True,
+            user=request.user
         )
         if request.user.is_superuser:
             serializer = CartListSerializers(object_list, context={'request': request}, many=True)
