@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from extension.utils import cacheops
 from carts.models import Cart
 from carts.serializers import (
     CartListSerializers,
@@ -49,7 +48,7 @@ class Factors(ViewSet):
         :return: list carts that is_pay=True
         """
         try:
-            obj_cart = cacheops(request, 'cart-list', Cart)
+            obj_cart = Cart.objects.all()
             if request.user.is_superuser:
                 cart_obj = obj_cart.filter(is_pay=True)
             else:
@@ -68,7 +67,7 @@ class Factors(ViewSet):
         :return: detail carts that is_pay=True
         """
         try:
-            obj_cart = cacheops(request, 'cart-list', Cart)
+            obj_cart = Cart.objects.all()
             if request.user.is_superuser:
                 cart_obj = obj_cart.get(pk=pk, is_pay=True)
             else:
@@ -86,7 +85,7 @@ class Factors(ViewSet):
         :return: update object with pk=pk
         """
         try:
-            obj = cacheops(request, 'cart-list', Cart)
+            obj = Cart.objects.all()
             cart = obj.get(pk=pk, is_pay=True)
             serializer = CartDetailSerializers(cart, data=request.data)
             if serializer.is_valid():
@@ -104,7 +103,7 @@ class Factors(ViewSet):
         :return: delete object with pk=pk and is_pay=True
         """
         try:
-            obj = cacheops(request, 'cart-list', Cart)
+            obj = Cart.objects.all()
             obj.get(pk=pk, is_pay=True).delete()
             return Response({'status': 'ok'}, status=200)
         except Exception:
@@ -113,7 +112,7 @@ class Factors(ViewSet):
     @action(detail=False, methods=['get'], name='factor-search')
     def pay_search(self, request):
         # http://localhost:8000/payment/factor/pay_search/?search=mehran
-        obj = cacheops(request, 'cart-list', Cart)
+        obj = Cart.objects.all()
         query = self.request.GET.get('search')
         object_list = obj.filter(
             Q(user__first_name__icontains=query) |

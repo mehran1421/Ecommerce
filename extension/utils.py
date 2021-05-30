@@ -48,14 +48,6 @@ def jalaly_converter(time):
     return persian_number_converter(output)
 
 
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
-
-
 '''
 random_string_generator is located here:
 http://joincfe.com/blog/random-string-generator-in-python/
