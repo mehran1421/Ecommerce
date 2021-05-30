@@ -18,6 +18,7 @@ from .serializers import (
     CategoryInputSerializer,
     CategoryDetailSerializer,
     FigureFieldSerializer,
+    FigureFieldDetailSerializer
 )
 from .models import (
     Product,
@@ -40,7 +41,7 @@ class ProductViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cacheProduct(request,'products',Product)
+        obj = cacheProduct(request, 'products', Product)
         product = obj.filter(status=True, choice='p')
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -58,7 +59,7 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        obj = cacheProduct(request,'products',Product)
+        obj = cacheProduct(request, 'products', Product)
         queryset = obj.filter(slug=slug, status=True, choice='p')
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -89,7 +90,7 @@ class ProductViews(ViewSet):
     @action(detail=False, methods=['get'], name='items-search')
     def product_search(self, request):
         # http://localhost:8000/product/product_search/?search=mehran
-        obj = cacheProduct(request,'products',Product)
+        obj = cacheProduct(request, 'products', Product)
         query = self.request.GET.get('search')
         object_list = obj.filter(
             Q(title__icontains=query) |
@@ -117,13 +118,13 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cacheProduct(request,'category',Category)
+        obj = cacheProduct(request, 'category', Category)
         category = obj.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        obj = cacheProduct(request,'category',Category)
+        obj = cacheProduct(request, 'category', Category)
         queryset = obj.filter(slug=slug, status=True)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -168,19 +169,19 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
-        obj = cacheProduct(request,'figure',FigureField)
+        obj = cacheProduct(request, 'figure', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        obj = cacheProduct(request,'figure',FigureField)
-        queryset = obj.filter(pk=pk)
-        serializer = FigureFieldSerializer(queryset, context={'request': request}, many=True)
+        obj = cacheProduct(request, 'figure', FigureField)
+        queryset = obj.get(pk=pk)
+        serializer = FigureFieldDetailSerializer(queryset)
         return Response(serializer.data)
 
     def create(self, request):
         try:
-            serializer = FigureFieldSerializer(data=request.data)
+            serializer = FigureFieldDetailSerializer(data=request.data)
             if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
             else:
@@ -192,7 +193,7 @@ class FigureViews(ViewSet):
 
     def update(self, request, pk=None):
         figure = FigureField.objects.get(pk=pk)
-        serializer = FigureFieldSerializer(figure, data=request.data)
+        serializer = FigureFieldDetailSerializer(figure, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
             return Response({'status': 'ok'}, status=200)

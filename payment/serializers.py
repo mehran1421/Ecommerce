@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from carts.models import Cart
 from carts.serializers import CartItemListSerializers
-from users.serializers import UserListSerializers
+from users.serializers import UserListSerializers, UserDetailSerializers
 from items.serializers import ProductSerializer
 
 
@@ -22,9 +22,12 @@ class FactorListSerializers(ModelSerializer):
 
 
 class FactorDetailSerializers(ModelSerializer):
+    user = UserDetailSerializers()
+
     class Meta:
         model = Cart
         fields = [
+            'user',
             'subtotal',
             'total',
             'timestamp',

@@ -132,13 +132,13 @@ class CartViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = Cart.objects.filter(pk=pk)
+                cart = Cart.objects.filter(is_pay=False, pk=pk).first()
             else:
-                cart = obj.filter(is_pay=False, user=request.user, pk=pk)
-            serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+                cart = obj.filter(is_pay=False, user=request.user, pk=pk).first()
+            serializer = CartDetailSerializers(cart, context={'request': request})
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)

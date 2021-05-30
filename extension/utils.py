@@ -48,8 +48,6 @@ def jalaly_converter(time):
     return persian_number_converter(output)
 
 
-<<<<<<< HEAD
-=======
 def cacheProduct(request, name, model):
     obj = caches['products'].get(name, None)
     if obj is None:
@@ -73,8 +71,6 @@ def cacheCartItem(request, name, model):
         caches['cartItems'].set(name, obj)
     return obj
 
-
->>>>>>> djcache
 '''
 random_string_generator is located here:
 http://joincfe.com/blog/random-string-generator-in-python/

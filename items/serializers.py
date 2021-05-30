@@ -16,6 +16,19 @@ class FigureFieldSerializer(ModelSerializer):
     """
     Property product
     """
+    detail = HyperlinkedIdentityField(view_name='product:figure-detail')
+
+    class Meta:
+        model = FigureField
+        fields = [
+            'detail',
+            'type_product',
+        ]
+
+class FigureFieldDetailSerializer(ModelSerializer):
+    """
+    Property product
+    """
 
     class Meta:
         model = FigureField

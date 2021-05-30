@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from .models import Cart, CartItem
-from users.serializers import UserListSerializers
+from users.serializers import UserListSerializers,UserDetailSerializers
 from items.serializers import ProductSerializer, ProductDetailSerializer
 
 
@@ -71,7 +71,7 @@ class CartItemDetailSerializers(ModelSerializer):
 class CartDetailSerializers(ModelSerializer):
     products = ProductSerializer(many=True)
     cart_item = CartItemListSerializers(source='cartitem_set', many=True)
-    user = UserListSerializers()
+    user = UserDetailSerializers()
 
     # first add MERCHANT in payment app
     # must connect to internet
@@ -83,7 +83,7 @@ class CartDetailSerializers(ModelSerializer):
             'user',
             'cart_item',
             # 'pay',
-            'items',
+            'products',
             'subtotal',
             'total',
             'timestamp',
