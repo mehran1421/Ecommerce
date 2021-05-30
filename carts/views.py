@@ -30,12 +30,14 @@ class CartItemViews(ViewSet):
     def list(self, request):
         try:
             obj = cacheCartItem(request, 'cartItem-list', CartItem)
+            # print(obj)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             if request.user.is_superuser:
                 query = obj
             else:
                 cart_obj = obj_cart.filter(user=request.user, is_pay=False).first()
                 query = obj.filter(cart=cart_obj)
+            # print(obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
