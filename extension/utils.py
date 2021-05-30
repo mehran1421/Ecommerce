@@ -68,7 +68,7 @@ def cacheCartItem(request, name, model):
     obj = caches['cartItems'].get(name, None)
     if obj is None:
         obj = model.objects.all()
-        cache.set(name, obj)
+        caches['cartItems'].set(name, obj)
     return obj
 
 
