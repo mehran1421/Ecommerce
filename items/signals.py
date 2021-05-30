@@ -1,5 +1,5 @@
 from extension.utils import unique_slug_generator
-from django.core.cache import cache
+from django.core.cache import caches
 from django.dispatch import receiver
 from .models import Product, Category
 from carts.models import CartItem
@@ -19,7 +19,6 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 @receiver(post_save, sender=Product)
 def pre_save_receiver(sender, instance, *args, **kwargs):
     product = Product.objects.get(slug=instance.slug)
-    print(product)
     try:
         cartItem = CartItem.objects.filter(item=product)
         for i in cartItem:
@@ -27,14 +26,14 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
             i.save()
     except Exception:
         pass
-    cache.delete('product-list')
+    caches['products'].delete('products')
 
 
 @receiver(pre_delete, sender=Product)
 def pre_delete_receiver_product(sender, instance, *args, **kwargs):
-    cache.delete('product-list')
+    caches['products'].delete('products')
 
 
 @receiver([pre_delete, pre_save], sender=Category)
 def pre_delete_receiver_category(sender, instance, *args, **kwargs):
-    cache.delete('category-list')
+    caches['products'].delete('category')
