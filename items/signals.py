@@ -26,15 +26,3 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
             i.save()
     except Exception:
         pass
-
-    caches['products'].delete('products')
-
-
-@receiver(pre_delete, sender=Product)
-def pre_delete_receiver_product(sender, instance, *args, **kwargs):
-    caches['products'].delete('products')
-
-
-@receiver([pre_delete, pre_save], sender=Category)
-def pre_delete_receiver_category(sender, instance, *args, **kwargs):
-    caches['products'].delete('category')

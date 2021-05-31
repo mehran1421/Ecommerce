@@ -132,21 +132,6 @@ JWT_AUTH_REFRESH_COOKIE = 'refresh'
 
 CUSTOM_PASSWORD_RESET_CONFIRM = 'desired URL'
 
-CACHES = {
-    "default": {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
-    },
-    'cartItems': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': 'd:/cartItem',
-    },
-    'products': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'items',
-    }
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

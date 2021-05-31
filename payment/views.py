@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from extension.utils import cacheCart
 from carts.models import Cart
 from carts.serializers import (
     CartListSerializers,
@@ -53,8 +52,7 @@ class Factors(ViewSet):
             if request.user.is_superuser:
                 cart_obj = Cart.objects.filter(is_pay=True)
             else:
-                obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart_obj = obj_cart.filter(user=request.user, is_pay=True)
+                cart_obj = Cart.objects.filter(user=request.user, is_pay=True)
             serializer = FactorListSerializers(cart_obj, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -72,8 +70,7 @@ class Factors(ViewSet):
             if request.user.is_superuser:
                 cart_obj = Cart.objects.get(pk=pk, is_pay=True)
             else:
-                obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart_obj = obj_cart.get(pk=pk, user=request.user, is_pay=True)
+                cart_obj = Cart.objects.get(pk=pk, user=request.user, is_pay=True)
 
             serializer = FactorDetailSerializers(cart_obj)
             return Response(serializer.data)
@@ -113,9 +110,8 @@ class Factors(ViewSet):
     @action(detail=False, methods=['get'], name='factor-search')
     def pay_search(self, request):
         # http://localhost:8000/payment/factor/pay_search/?search=mehran
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         query = self.request.GET.get('search')
-        object_list = obj.filter(
+        object_list = Cart.objects.filter(
             Q(user__first_name__icontains=query) |
             Q(user__last_name__icontains=query) |
             Q(user__username__icontains=query) |
