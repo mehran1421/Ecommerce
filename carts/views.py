@@ -1,6 +1,5 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from extension.utils import cacheCart, cacheCartItem
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     CartItemListSerializers,
@@ -126,7 +125,6 @@ class CartViews(ViewSet):
             if request.user.is_superuser:
                 cart = Cart.objects.filter(is_pay=False, pk=pk).first()
             else:
-                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart = Cart.objects.filter(is_pay=False, user=request.user, pk=pk).first()
             serializer = CartDetailSerializers(cart, context={'request': request})
             return Response(serializer.data)
