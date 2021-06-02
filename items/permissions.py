@@ -25,3 +25,13 @@ class IsSuperUserOrReadonly(BasePermission):
             request.user.is_authenticated and
             request.user.is_superuser
         )
+
+
+class IsSellerOrSuperUserObject(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            # get access to superuser
+            request.user.is_authenticated and
+            (request.user.is_superuser or
+             obj.seller == request.user)
+        )
