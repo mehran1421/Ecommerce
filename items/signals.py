@@ -27,11 +27,13 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
     except Exception:
         pass
     caches['all_products'].delete('products')
+    cache.delete(f'product_{instance.slug}')
 
 
 @receiver(pre_delete, sender=Product)
 def pre_delete_receiver_product(sender, instance, *args, **kwargs):
     caches['all_products'].delete('products')
+    cache.delete(f'product_{instance.slug}')
 
 
 @receiver([pre_delete, pre_save], sender=Category)
