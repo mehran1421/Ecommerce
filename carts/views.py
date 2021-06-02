@@ -31,7 +31,7 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart_obj = obj.get(is_pay=False)
-            query = cacheCartItem(request, f'cartItem-{cart_obj.user.get_full_name()}', CartItem, cart_obj)
+            query = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -41,7 +41,7 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart_obj = obj.get(is_pay=False)
-            cart_items = cacheCartItem(request, f'cartItem-{cart_obj.user.get_full_name()}', CartItem, cart_obj)
+            cart_items = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
             queryset = cart_items.get(pk=pk)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -52,7 +52,7 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart = obj.get(is_pay=False)
-            cart_items = cacheCartItem(request, f'cartItem-{cart.user.get_full_name()}', CartItem, cart)
+            cart_items = cacheCartItem(request, f'cartItem-{cart.user.email}', CartItem, cart)
             queryset = cart_items.get(pk=pk)
 
             queryset.delete()
@@ -81,7 +81,7 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart = obj.get(is_pay=False)
-            cart_items = cacheCartItem(request, f'cartItem-{cart.user.get_full_name()}', CartItem, cart)
+            cart_items = cacheCartItem(request, f'cartItem-{cart.user.email}', CartItem, cart)
             queryset = cart_items.get(pk=pk)
             serializer = CartItemDetailSerializers(queryset, data=request.data)
             if serializer.is_valid():
