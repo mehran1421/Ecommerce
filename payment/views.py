@@ -1,6 +1,7 @@
 from carts.permissions import IsSuperUser
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from extension.utils import cacheCart
 from zeep import Client
 from .serializers import FactorListSerializers, FactorDetailSerializers
 from django.db.models import Q
@@ -52,7 +53,8 @@ class Factors(ViewSet):
             if request.user.is_superuser:
                 cart_obj = Cart.objects.filter(is_pay=True)
             else:
-                cart_obj = Cart.objects.filter(user=request.user, is_pay=True)
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+                cart_obj = obj.filter(is_pay=True)
             serializer = FactorListSerializers(cart_obj, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -70,7 +72,8 @@ class Factors(ViewSet):
             if request.user.is_superuser:
                 cart_obj = Cart.objects.get(pk=pk, is_pay=True)
             else:
-                cart_obj = Cart.objects.get(pk=pk, user=request.user, is_pay=True)
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+                cart_obj = obj.get(is_pay=True,pk=pk)
 
             serializer = FactorDetailSerializers(cart_obj)
             return Response(serializer.data)
