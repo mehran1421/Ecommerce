@@ -77,3 +77,19 @@ def unique_slug_generator(instance, new_slug=None):
         )
         return unique_slug_generator(instance, new_slug=new_slug)
     return slug
+
+
+def productCacheDatabase(request, name, model):
+    obj = caches['all_products'].get(name, None)
+    if obj is None:
+        obj = model.objects.filter(status=True, choice='p')
+        caches['all_products'].set(name, obj)
+    return obj
+
+
+def cacheDetailProduct(request, name, slug, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.get(slug=slug, status=True, choice='p')
+        cache.set(name, obj)
+    return obj
