@@ -4,7 +4,7 @@ from items.serializers import ProductSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
-from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategory, cacheFigure
+from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
 from .permissions import (
     IsSuperUserOrIsSeller,
     IsSellerOrSuperUserObject,
@@ -120,13 +120,13 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        obj = cacheCategory(request, 'category', Category)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
         category = obj.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        obj = cacheCategory(request, 'category', Category)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
         queryset = obj.filter(slug=slug)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -144,7 +144,7 @@ class CategoryViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, slug=None):
-        obj = cacheCategory(request, 'category', Category)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
         category = obj.get(slug=slug)
         serializer = CategoryDetailSerializer(category, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
@@ -153,7 +153,7 @@ class CategoryViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
-        obj = cacheCategory(request, 'category', Category)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
         category = obj.get(slug=slug)
         if request.user.is_superuser:
             category.delete()
@@ -161,7 +161,7 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
-        objCat = cacheCategory(request, 'category', Category)
+        objCat = cacheCategoryOrFigur(request, 'category', Category)
         objPro = productCacheDatabase(request, 'products', Product)
         queryset = objCat.get(slug=slug, status=True)
         products = objPro.filter(category=queryset)
@@ -173,12 +173,12 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
-        obj = cacheFigure(request, 'figure', FigureField)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        obj = cacheFigure(request, 'figure', FigureField)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
         queryset = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(queryset)
         return Response(serializer.data)
@@ -196,7 +196,7 @@ class FigureViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        obj = cacheFigure(request, 'figure', FigureField)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
         figure = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(figure, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
@@ -205,7 +205,7 @@ class FigureViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, pk=None):
-        obj = cacheFigure(request, 'figure', FigureField)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
         figure = obj.get(pk=pk)
         if request.user.is_superuser:
             figure.delete()

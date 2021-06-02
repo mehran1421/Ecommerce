@@ -99,15 +99,7 @@ def cacheDetailProduct(request, name, slug, model):
     return obj
 
 
-def cacheCategory(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
-
-
-def cacheFigure(request, name, model):
+def cacheCategoryOrFigur(request, name, model):
     obj = cache.get(name, None)
     if obj is None:
         obj = model.objects.all()
