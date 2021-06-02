@@ -4,6 +4,7 @@ from items.serializers import ProductSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
+from extension.utils import productCacheDatabase,cacheDetailProduct
 from .permissions import (
     IsSuperUserOrIsSeller,
     IsSuperUserOrReadonly
@@ -39,7 +40,10 @@ class ProductViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        product = Product.objects.filter(status=True, choice='p')
+        if request.user.is_superuser:
+            product=Product.objects.all()
+        else:
+            product = productCacheDatabase(request, 'products', Product)
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -56,7 +60,10 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        queryset = Product.objects.filter(slug=slug, status=True, choice='p')
+        if request.user.is_superuser:
+            queryset=Product.objects.get(slug=slug)
+        else:
+            queryset = cacheDetailProduct(request,f'product_{slug}',slug,Product)
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
