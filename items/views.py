@@ -4,9 +4,10 @@ from items.serializers import ProductSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
-from extension.utils import productCacheDatabase,cacheDetailProduct
+from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategory, cacheFigure
 from .permissions import (
     IsSuperUserOrIsSeller,
+    IsSellerOrSuperUserObject,
     IsSuperUserOrReadonly
 )
 from .serializers import (
@@ -30,20 +31,20 @@ class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = (IsSuperUserOrIsSeller,)
-        elif self.action == 'list':
+        elif self.action in ['list', 'retrieve']:
             permission_classes = ()
         else:
-            permission_classes = (IsSuperUserOrReadonly,)
+            permission_classes = (IsSellerOrSuperUserObject,)
 
         return [permission() for permission in permission_classes]
 
     lookup_field = 'slug'
 
     def list(self, request):
-        if request.user.is_superuser:
-            product=Product.objects.all()
-        else:
-            product = productCacheDatabase(request, 'products', Product)
+        product = productCacheDatabase(request, 'products', Product)
+        if not request.user.is_superuser:
+            obj = product.filter(status=True, choice='p')
+            product = obj
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -61,18 +62,18 @@ class ProductViews(ViewSet):
 
     def retrieve(self, request, slug=None):
         if request.user.is_superuser:
-            queryset=Product.objects.get(slug=slug)
+            queryset = Product.objects.get(slug=slug)
         else:
-            queryset = cacheDetailProduct(request,f'product_{slug}',slug,Product)
-        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
+            queryset = cacheDetailProduct(request, f'product_{slug}', slug, Product)
+            print(queryset)
+            print("************")
+
+        serializer = ProductDetailSerializer(queryset, context={'request': request})
         return Response(serializer.data)
 
     def update(self, request, slug=None):
-        if request.user.is_superuser:
-            product = Product.objects.get(slug=slug)
-        else:
-            product = Product.objects.get(slug=slug, seller=request.user)
-
+        obj = productCacheDatabase(request, 'products', Product)
+        product = obj.filter(slug=slug)
         serializer = ProductDetailSerializer(product, data=request.data)
         if serializer.is_valid():
             if request.user.is_superuser:
@@ -83,10 +84,8 @@ class ProductViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
-        if request.user.is_superuser:
-            product = Product.objects.get(slug=slug)
-        else:
-            product = Product.objects.get(slug=slug, seller=request.user)
+        obj = productCacheDatabase(request, 'products', Product)
+        product = obj.filter(slug=slug)
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
@@ -94,7 +93,8 @@ class ProductViews(ViewSet):
     def product_search(self, request):
         # http://localhost:8000/product/product_search/?search=mehran
         query = self.request.GET.get('search')
-        object_list = Product.objects.filter(
+        objs = productCacheDatabase(request, 'products', Product)
+        object_list = objs.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
             Q(price__iexact=query) |
@@ -120,12 +120,14 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
-        category = Category.objects.filter(status=True)
+        obj = cacheCategory(request, 'category', Category)
+        category = obj.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        queryset = Category.objects.filter(slug=slug, status=True)
+        obj = cacheCategory(request, 'category', Category)
+        queryset = obj.filter(slug=slug)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -142,7 +144,8 @@ class CategoryViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, slug=None):
-        category = Category.objects.get(slug=slug)
+        obj = cacheCategory(request, 'category', Category)
+        category = obj.get(slug=slug)
         serializer = CategoryDetailSerializer(category, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -150,15 +153,18 @@ class CategoryViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
-        category = Category.objects.get(slug=slug)
+        obj = cacheCategory(request, 'category', Category)
+        category = obj.get(slug=slug)
         if request.user.is_superuser:
             category.delete()
         return Response({'status': 'ok'}, status=200)
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
-        queryset = Category.objects.filter(slug=slug, status=True).first()
-        products = Product.objects.filter(category=queryset)
+        objCat = cacheCategory(request, 'category', Category)
+        objPro = productCacheDatabase(request, 'products', Product)
+        queryset = objCat.get(slug=slug, status=True)
+        products = objPro.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -167,12 +173,13 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
-        obj = FigureField.objects.all()
+        obj = cacheFigure(request, 'figure', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = FigureField.objects.get(pk=pk)
+        obj = cacheFigure(request, 'figure', FigureField)
+        queryset = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(queryset)
         return Response(serializer.data)
 
@@ -189,7 +196,8 @@ class FigureViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        figure = FigureField.objects.get(pk=pk)
+        obj = cacheFigure(request, 'figure', FigureField)
+        figure = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(figure, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -197,7 +205,8 @@ class FigureViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, pk=None):
-        figure = FigureField.objects.get(pk=pk)
+        obj = cacheFigure(request, 'figure', FigureField)
+        figure = obj.get(pk=pk)
         if request.user.is_superuser:
             figure.delete()
         return Response({'status': 'ok'}, status=200)
