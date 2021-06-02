@@ -20,6 +20,12 @@ and get refresh access token and post request to `localhost:8000/cart/user/`with
 # Directory
 1. [extension](#extension)
 
+# Caching query by:
+1. [memcached](#memcached)
+2. [database](#database)
+3. [filesystem](#filesystem)
+
+
 # products
 
 * ### **models.py**
@@ -298,3 +304,41 @@ for example : **2021-05-23** ==========> **2 خرداد 1400 , ساعت 40 : 20*
 
 `cacheops:`
 ###### use cache in views.py for Low code
+
+# memcached
+##### use way **cache-Aside**: in this way first request to cache if exist information read it but if not exist, request to database and read query  
+###### caching cart object in to memcached. memcached key must less than 500 Kb and value must less than 1 MB
+###### any cart cache in memcached with ``cart-{user.email}``that is mean all carts caching that user create
+even carts that ``is_pay=True``
+```
+{
+'cart-m.kamrani1421@gmail.com':[
+                                cart1,
+                                cart2,...
+                               ],
+...
+}
+```
+# database
+###### caching products in database because products change less.
+###### use **Read-Through cache**: in this way database and cache are aligned and request all time sending to cache other than first time
+```
+CACHES = {
+    'products': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'items',
+    }
+}
+```
+# filesystem
+###### caching cartItem 
+###### low security
+###### suitable for trivial data
+```
+CACHES = {
+    'cartItems': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': 'd:/cartItem',
+    },
+}
+```
