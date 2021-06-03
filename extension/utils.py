@@ -81,8 +81,6 @@ def unique_slug_generator(instance, new_slug=None):
 
 def productCacheDatabase(request, name, model):
     obj = caches['all_products'].get(name, None)
-    print(obj)
-    print("=============")
     if obj is None:
         obj = model.objects.all()
         caches['all_products'].set(name, obj)
@@ -92,7 +90,7 @@ def productCacheDatabase(request, name, model):
 def cacheDetailProduct(request, name, slug, model):
     obj = cache.get(name, None)
     print(obj)
-    print("------------------------------------")
+    print("---------------")
     if obj is None:
         obj = model.objects.get(slug=slug, status=True, choice='p')
         cache.set(name, obj)
@@ -117,6 +115,8 @@ def cacheCart(request, name, model, user):
 
 def cacheCartItem(request, name, model, cart):
     obj = cache.get(name, None)
+    print(obj)
+    print("==============")
     if obj is None:
         obj = model.objects.filter(cart=cart)
         cache.set(name, obj)
