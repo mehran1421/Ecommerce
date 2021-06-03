@@ -49,6 +49,16 @@ def jalaly_converter(time):
 
 
 def cacheProduct(request, name, model):
+    """
+    cache products,category,figureField in database
+    for products ===> name='products'
+    for category ===> name='category'
+    for figure ===> name='figure'
+    :param request:
+    :param name:
+    :param model:
+    :return:
+    """
     obj = caches['products'].get(name, None)
     if obj is None:
         obj = model.objects.all()
@@ -57,6 +67,19 @@ def cacheProduct(request, name, model):
 
 
 def cacheCart(request, name, model, user):
+    """
+    cache cart object in memcached
+    for example:
+    {
+            'cart-m.kamrani1421@gmail.com':[object1,object2,...],
+            ...
+    }
+    :param request:
+    :param name:
+    :param model:
+    :param user:
+    :return:
+    """
     obj = cache.get(name, None)
     if obj is None:
         obj = model.objects.filter(user=user)
@@ -65,6 +88,14 @@ def cacheCart(request, name, model, user):
 
 
 def cacheCartItem(request, name, model):
+    """
+    caching in the fileSystem
+    security is loss ===> change in cartItem cant change cart objects that is_pay=True
+    :param request:
+    :param name:
+    :param model:
+    :return:
+    """
     obj = caches['cartItems'].get(name, None)
     if obj is None:
         obj = model.objects.all()
