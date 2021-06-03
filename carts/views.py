@@ -20,6 +20,10 @@ from .models import (
 
 
 class CartItemViews(ViewSet):
+    """
+        users can list,retrieve,update,destroy,create object for each cart
+    """
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrSelfObject,)
@@ -28,22 +32,31 @@ class CartItemViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
+        """
+                other user can just see self cartItems object
+                :param request:
+                :return:
+        """
         try:
             obj = cacheCartItem(request, 'cartItem-list', CartItem)
-            # print(obj)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             if request.user.is_superuser:
                 query = obj
             else:
                 cart_obj = obj_cart.filter(user=request.user, is_pay=False).first()
                 query = obj.filter(cart=cart_obj)
-            # print(obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
+        """
+                detail cartItem for other user
+                :param request:
+                :param pk:
+                :return:
+        """
         try:
             obj = cacheCartItem(request, 'cartItem-list', CartItem)
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
@@ -73,6 +86,11 @@ class CartItemViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
+        """
+                when create owner user is request.user and is_pay=False
+                :param request:
+                :return:
+        """
         obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             serializer = CartItemInputSerializers(data=request.data)
@@ -90,6 +108,12 @@ class CartItemViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
+        """
+               user cant change cart in update
+               :param request:
+               :param pk:
+               :return:
+        """
         obj = cacheCartItem(request, 'cartItem-list', CartItem)
         obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
@@ -122,6 +146,11 @@ class CartViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
+        """
+               other user can show list carts that is_pay=False
+               :param request:
+               :return:
+        """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
@@ -134,6 +163,12 @@ class CartViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
+        """
+                detail cart
+                :param request:
+                :param pk:
+                :return:
+        """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
@@ -158,6 +193,11 @@ class CartViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
+        """
+                when create object user=request.user and is_pay=False
+                :param request:
+                :return:
+        """
         try:
             cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             lenCart = cart.objects.filter(is_pay=False).count()
