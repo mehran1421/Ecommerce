@@ -1,3 +1,30 @@
+# Directory
+1. [extension](#extension)
+
+# Performance
+1. [django-silk](#django-silk)
+
+# extension
+* ### **cacheProduct**
+```
+    obj = caches['products'].get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        caches['products'].set(name, obj)
+    return obj
+```
+###### cache inside database
+* ### **cacheCart**
+`
+cache.set(f"cart-{user.email}", obj)
+`
+###### caching into memcached cart
+
+* ### **cacheCartItem**
+`caches['cartItems'].set(name, obj)`
+###### cache cartItem in to filesystem
+
+
 # django-silk
 * ### **list products**
 ###### /product/
@@ -30,11 +57,11 @@
 ###### 38ms on queries
 
 * ### **list cart**
-10:51:01.183
-200 GET
-/cart/cart/
-209ms overall
-13ms on queries
 ###### /cart/cart/
-###### 170ms overall
-###### 14ms on queries
+###### 174ms overall
+###### 12ms on queries
+
+* ### **detail cart**
+###### /cart/cart/3/
+###### 189ms overall
+###### 26ms on queries

@@ -144,7 +144,6 @@ class CartViews(ViewSet):
                :return:
         """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-        print(obj)
         try:
             if request.user.is_superuser:
                 queryset = Cart.objects.filter(is_pay=False)
@@ -163,15 +162,13 @@ class CartViews(ViewSet):
                 :return:
         """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-        print(obj)
+        print(f'cart-{request.user.email}')
         try:
             if request.user.is_superuser:
                 cart = Cart.objects.filter(pk=pk)
             else:
                 cart = obj.filter(is_pay=False, user=request.user, pk=pk)
-            print(cart)
-            serializer = CartDetailSerializers(cart, context={'request': request})
-            print(serializer)
+            serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)

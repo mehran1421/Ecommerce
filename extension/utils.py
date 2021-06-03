@@ -81,11 +81,9 @@ def cacheCart(request, name, model, user):
     :return:
     """
     obj = cache.get(name, None)
-    print(obj)
-    print("-------------")
     if obj is None:
         obj = model.objects.filter(user=user)
-        cache.set(f"cart_{user.email}", obj)
+        cache.set(f"cart-{user.email}", obj)
     return obj
 
 
@@ -99,6 +97,8 @@ def cacheCartItem(request, name, model):
     :return:
     """
     obj = caches['cartItems'].get(name, None)
+    print(obj)
+    print("--------------------")
     if obj is None:
         obj = model.objects.all()
         caches['cartItems'].set(name, obj)
