@@ -34,7 +34,6 @@ def cart_item_pre_delete_receiver(sender, instance, *args, **kwargs):
 @receiver(post_save, sender=CartItem)
 def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
     # when object update or create update subtotal in cart
-    caches['cartItems'].delete('cartItem-list')
     if not instance.cart.is_pay:
         instance.cart.update_subtotal()
 

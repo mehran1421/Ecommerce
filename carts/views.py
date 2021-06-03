@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+from django.core.cache import caches
 from extension.utils import cacheCart, cacheCartItem
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (
@@ -109,6 +110,8 @@ class CartItemViews(ViewSet):
 
     def update(self, request, pk=None):
         """
+                dont delete cache
+                method PUT
                user cant change cart in update
                :param request:
                :param pk:
@@ -134,8 +137,39 @@ class CartItemViews(ViewSet):
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
+    def partial_update(self, request, pk=None):
+        """
+                delete cache
+                method PATCH
+               user cant change cart in update
+               :param request:
+               :param pk:
+               :return:
+        """
+        obj = cacheCartItem(request, 'cartItem-list', CartItem)
+        obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+        try:
+            if request.user.is_superuser:
+                cartItem = obj.get(pk=pk)
+            else:
+                cart = obj_cart.get(user=request.user, is_pay=False)
+                cartItem = obj.get(cart=cart)
+
+            caches['cartItems'].delete('cartItem-list')
+            serializer = CartItemDetailSerializers(cartItem, data=request.data, partial=True)
+            if serializer.is_valid():
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(cart=cart)
+                return Response({'status': 'ok'}, status=200)
+            return Response({'status': 'Internal Server Error'}, status=500)
+        except Exception:
+            return Response({'status': 'must you authentications '}, status=400)
+
 
 class CartViews(ViewSet):
+    permission_classes = (IsAuthenticated,)
 
     def list(self, request):
         """
@@ -162,7 +196,6 @@ class CartViews(ViewSet):
                 :return:
         """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-        print(f'cart-{request.user.email}')
         try:
             if request.user.is_superuser:
                 cart = Cart.objects.filter(pk=pk)
