@@ -19,6 +19,10 @@ from .models import (
 
 
 class CartItemViews(ViewSet):
+    """
+    users can list,retrieve,update,destroy,create object for each cart
+    """
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrSelfObject,)
@@ -27,24 +31,29 @@ class CartItemViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
+        """
+        other user can just see self cartItems object
+        :param request:
+        :return:
+        """
         try:
-            if request.user.is_superuser:
-                query = CartItem.objects.all()
-            else:
-                cart_obj = Cart.objects.filter(user=request.user, is_pay=False).first()
-                query = CartItem.objects.filter(cart=cart_obj)
+            cart_obj = Cart.objects.filter(user=request.user, is_pay=False).first()
+            query = CartItem.objects.filter(cart=cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
+        """
+        detail cartItem for other user
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
-            if request.user.is_superuser:
-                queryset = CartItem.objects.filter(pk=pk).first()
-            else:
-                cart_obj = Cart.objects.filter(user=request.user, is_pay=False).first()
-                queryset = CartItem.objects.filter(pk=pk, cart=cart_obj)
+            cart_obj = Cart.objects.filter(user=request.user, is_pay=False).first()
+            queryset = CartItem.objects.filter(pk=pk, cart=cart_obj)
             serializer = CartItemDetailSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
@@ -64,6 +73,11 @@ class CartItemViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
+        """
+        when create owner user is request.user and is_pay=False
+        :param request:
+        :return:
+        """
         try:
             serializer = CartItemInputSerializers(data=request.data)
             cart = Cart.objects.get(user=request.user, is_pay=False)
@@ -80,6 +94,12 @@ class CartItemViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
+        """
+        user cant change cart in update
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
             if request.user.is_superuser:
                 cartItem = CartItem.objects.get(pk=pk)
@@ -110,17 +130,28 @@ class CartViews(ViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request):
+        """
+        other user can show list carts that is_pay=False
+        :param request:
+        :return:
+        """
         try:
             if request.user.is_superuser:
                 queryset = Cart.objects.filter(is_pay=False)
             else:
-                queryset = Cart.objects.filter(is_pay=False)
+                queryset = Cart.objects.filter(is_pay=False, user=request.user)
             serializer = CartListSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
     def retrieve(self, request, pk=None):
+        """
+        detail cart
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
             if request.user.is_superuser:
                 cart = Cart.objects.filter(is_pay=False, pk=pk).first()
@@ -143,8 +174,13 @@ class CartViews(ViewSet):
             return Response({'status': 'must you authentications '}, status=400)
 
     def create(self, request):
+        """
+        when create object user=request.user and is_pay=False
+        :param request:
+        :return:
+        """
         try:
-            cart = Cart.objects.filter(user=request.user,is_pay=False)
+            cart = Cart.objects.filter(user=request.user, is_pay=False)
             lenCart = cart.count()
             serializer = CartInputSerializers(data=request.data)
             if serializer.is_valid() and lenCart == 0:
