@@ -1,3 +1,8 @@
+#### when request to cartItem with PUT method: 
+dont delete cache
+#### when request to cartItem with PATCH method:
+delete cache
+
 # Directory
 1. [extension](#extension)
 
