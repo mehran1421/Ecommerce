@@ -25,6 +25,7 @@ class FigureFieldSerializer(ModelSerializer):
             'type_product',
         ]
 
+
 class FigureFieldDetailSerializer(ModelSerializer):
     """
     Property product

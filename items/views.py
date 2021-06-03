@@ -6,7 +6,8 @@ from rest_framework.decorators import action
 from django.db.models import Q
 from .permissions import (
     IsSuperUserOrIsSeller,
-    IsSuperUserOrReadonly
+    IsSuperUserOrReadonly,
+    IsSellerOrSuperUserObject
 )
 from .serializers import (
     ProductSerializer,
@@ -29,21 +30,36 @@ class ProductViews(ViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = (IsSuperUserOrIsSeller,)
-        elif self.action == 'list':
+        elif self.action in ['list', 'retrieve']:
             permission_classes = ()
         else:
-            permission_classes = (IsSuperUserOrReadonly,)
+            permission_classes = (IsSellerOrSuperUserObject,)
 
         return [permission() for permission in permission_classes]
 
     lookup_field = 'slug'
 
     def list(self, request):
-        product = Product.objects.filter(status=True, choice='p')
+        """
+        for superuser return all object and
+        for other user return Objects that status=True,choice='p'
+        :param request:
+        :return:
+        """
+        if request.user.is_superuser:
+            product = Product.objects.all()
+        else:
+            product = Product.objects.filter(status=True, choice='p')
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def create(self, request):
+        """
+        create object and put choice='d',status=False,seller=request.user
+        and superuser must ok object ====> status=True,choice='p' for shows site
+        :param request:
+        :return:
+        """
         try:
             serializer = InputProductSerializers(data=request.data)
             if serializer.is_valid():
@@ -56,11 +72,29 @@ class ProductViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def retrieve(self, request, slug=None):
-        queryset = Product.objects.filter(slug=slug, status=True, choice='p')
+        """
+        superuser can see all object detail
+        but other user just objects that status=True,choice='p'
+        :param request:
+        :param slug:
+        :return:
+        """
+        if request.user.is_superuser:
+            queryset = Product.objects.filter(slug=slug)
+        else:
+            queryset = Product.objects.filter(slug=slug, status=True, choice='p')
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def update(self, request, slug=None):
+        """
+        superuser can change all objects
+        but other user if is_seller=True and be seller object just can change owner object
+        if other user update object status=False,choice='d' for dont show site
+        :param request:
+        :param slug:
+        :return:
+        """
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
         else:
@@ -76,6 +110,13 @@ class ProductViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
+        """
+                superuser can delete all objects
+                but other user if is_seller=True and be seller object just can delete owner object
+                :param request:
+                :param slug:
+                :return:
+        """
         if request.user.is_superuser:
             product = Product.objects.get(slug=slug)
         else:
@@ -113,11 +154,22 @@ class CategoryViews(ViewSet):
     lookup_field = 'slug'
 
     def list(self, request):
+        """
+        list all category
+        :param request:
+        :return:
+        """
         category = Category.objects.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, slug=None):
+        """
+        detail category
+        :param request:
+        :param slug:
+        :return:
+        """
         queryset = Category.objects.filter(slug=slug, status=True)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -135,6 +187,12 @@ class CategoryViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, slug=None):
+        """
+        update category
+        :param request:
+        :param slug:
+        :return:
+        """
         category = Category.objects.get(slug=slug)
         serializer = CategoryDetailSerializer(category, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
@@ -143,6 +201,12 @@ class CategoryViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, slug=None):
+        """
+        delete object
+        :param request:
+        :param slug:
+        :return:
+        """
         category = Category.objects.get(slug=slug)
         if request.user.is_superuser:
             category.delete()
@@ -150,6 +214,13 @@ class CategoryViews(ViewSet):
 
     @action(detail=True, methods=['get'], name='product-cat')
     def product_category(self, request, slug=None):
+        """
+        all products that in this category
+        for example user click to mobile category and shows to user all products that be mobile category
+        :param request:
+        :param slug:
+        :return:
+        """
         queryset = Category.objects.filter(slug=slug, status=True).first()
         products = Product.objects.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
@@ -157,6 +228,12 @@ class CategoryViews(ViewSet):
 
 
 class FigureViews(ViewSet):
+    """
+    figure fields for example:
+    os:""
+    color:""
+    and ...
+    """
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
@@ -190,6 +267,12 @@ class FigureViews(ViewSet):
         return Response({'status': 'Internal Server Error'}, status=500)
 
     def destroy(self, request, pk=None):
+        """
+        delete figure field
+        :param request:
+        :param pk:
+        :return:
+        """
         figure = FigureField.objects.get(pk=pk)
         if request.user.is_superuser:
             figure.delete()
