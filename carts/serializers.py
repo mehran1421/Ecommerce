@@ -83,7 +83,7 @@ class CartDetailSerializers(ModelSerializer):
             'user',
             'cart_item',
             # 'pay',
-            'items',
+            'products',
             'subtotal',
             'total',
             'timestamp',

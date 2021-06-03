@@ -136,14 +136,6 @@ class CartItemViews(ViewSet):
 
 
 class CartViews(ViewSet):
-    def get_permissions(self):
-        if self.action in ['retrieve', 'destroy', 'update']:
-            permission_classes = (IsSuperUserOrSelfObject,)
-        elif self.action == 'list':
-            permission_classes = (IsSuperUser,)
-        else:
-            permission_classes = ()
-        return [permission() for permission in permission_classes]
 
     def list(self, request):
         """
@@ -152,6 +144,7 @@ class CartViews(ViewSet):
                :return:
         """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+        print(obj)
         try:
             if request.user.is_superuser:
                 queryset = Cart.objects.filter(is_pay=False)
@@ -170,12 +163,15 @@ class CartViews(ViewSet):
                 :return:
         """
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+        print(obj)
         try:
             if request.user.is_superuser:
                 cart = Cart.objects.filter(pk=pk)
             else:
                 cart = obj.filter(is_pay=False, user=request.user, pk=pk)
-            serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
+            print(cart)
+            serializer = CartDetailSerializers(cart, context={'request': request})
+            print(serializer)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)

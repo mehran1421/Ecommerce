@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+from silk.profiling.profiler import silk_profile
 from rest_framework.decorators import action
 from extension.utils import cacheProduct
 from django.db.models import Q
@@ -37,6 +38,7 @@ class ProductViews(ViewSet):
 
     lookup_field = 'slug'
 
+    @silk_profile(name='list products')
     def list(self, request):
         """
                for superuser return all object and
@@ -52,6 +54,7 @@ class ProductViews(ViewSet):
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    @silk_profile(name='create products')
     def create(self, request):
         """
                 create object and put choice='d',status=False,seller=request.user
@@ -70,6 +73,7 @@ class ProductViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
+    @silk_profile(name='retrieve products')
     def retrieve(self, request, slug=None):
         """
                superuser can see all object detail
@@ -86,6 +90,7 @@ class ProductViews(ViewSet):
         serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    @silk_profile(name='update products')
     def update(self, request, slug=None):
         """
                superuser can change all objects
@@ -110,6 +115,7 @@ class ProductViews(ViewSet):
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
+    @silk_profile(name='destroy products')
     def destroy(self, request, slug=None):
         """
                 superuser can delete all objects
@@ -156,6 +162,7 @@ class CategoryViews(ViewSet):
 
     lookup_field = 'slug'
 
+    @silk_profile(name='list category')
     def list(self, request):
         """
                list all category
@@ -167,6 +174,7 @@ class CategoryViews(ViewSet):
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
+    @silk_profile(name='retrieve category')
     def retrieve(self, request, slug=None):
         """
                 detail category
@@ -191,6 +199,7 @@ class CategoryViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
+    @silk_profile(name='update category')
     def update(self, request, slug=None):
         """
               update category
@@ -205,6 +214,7 @@ class CategoryViews(ViewSet):
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
 
+    @silk_profile(name='destroy category')
     def destroy(self, request, slug=None):
         """
                 delete object

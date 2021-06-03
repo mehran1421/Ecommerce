@@ -45,9 +45,12 @@ urlpatterns = [
     path('api/rest-auth/', include('dj_rest_auth.urls')),
     path('api/rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 
+    # performance
+    path('silk/', include('silk.urls', namespace='silk')),
+    # document
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
+    # auth
     path('dj-rest-auth/registration/account-confirm-email/<str:key>/', ConfirmEmailView.as_view(), ),
     # Needs to be defined before the registration path
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),

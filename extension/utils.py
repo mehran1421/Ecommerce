@@ -81,6 +81,8 @@ def cacheCart(request, name, model, user):
     :return:
     """
     obj = cache.get(name, None)
+    print(obj)
+    print("-------------")
     if obj is None:
         obj = model.objects.filter(user=user)
         cache.set(f"cart_{user.email}", obj)
