@@ -120,15 +120,6 @@ class CartItemViews(ViewSet):
 
 
 class CartViews(ViewSet):
-    def get_permissions(self):
-        if self.action in ['retrieve', 'destroy', 'update']:
-            permission_classes = (IsSuperUserOrSelfObject,)
-        elif self.action == 'list':
-            permission_classes = (IsSuperUser,)
-        else:
-            permission_classes = ()
-        return [permission() for permission in permission_classes]
-
     def list(self, request):
         """
         other user can show list carts that is_pay=False

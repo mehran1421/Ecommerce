@@ -20,6 +20,9 @@ and get refresh access token and post request to `localhost:8000/cart/user/`with
 # Directory
 1. [extension](#extension)
 
+# Performance
+1. [django-silk](#django-silk)
+
 # products
 
 * ### **models.py**
@@ -192,42 +195,21 @@ and delete cache
 ##### `def cart_post_save_receiver(sender, instance, *args, **kwargs):`
 for delete cache cart and cartItem for more speed query to database
 * ### **views.py**
-in views.py, use viewset for api,
-and cache by **REDIS** for more speed
+in views.py, use viewset for api
 ```
 for example:
     def list(self, request):
         try:
-            =======================================
-            =           use cache with redis      =
-            =        and Django self cache system = 
-            =======================================
-            obj = cache.get('cartItem-list', None)
-            """
-                obj=[None,list]
-            """
-            cart = Cart.objects.all()
-            cart_obj = cart.filter(user=request.user).first()
-            if obj is None:
-                obj = CartItem.objects.all()
-                cache.set('cart-list', cart)
-                cache.set('cartItem-list', obj)
-            query = obj.filter(cart=cart_obj)
+            cart_obj = Cart.objects.filter(user=request.user, is_pay=False).first()
+            query = CartItem.objects.filter(cart=cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
+
 ```
 this code show list cartItem for user 
-for caching use this functions and for les than code
-```
-def cacheops(request, name, model):
-    obj = cache.get(name, None)
-    if obj is None:
-        obj = model.objects.all()
-        cache.set(name, obj)
-    return obj
-```
+
 # payment
 for payment user and show list carts with **is_pay=True**
 just superuser can run it
@@ -287,14 +269,51 @@ https://dev.to/jkaylight/django-rest-framework-authentication-with-dj-rest-auth-
 
 # extension
 * ### **utils.py**
-there are two function:
+there are one function:
 ```
 def jalaly_converter(time):
-def cacheops(request, name, model):
 ```
 `jalaly_converter:`
 ###### this function convert Miladi date for jalali date
 for example : **2021-05-23** ==========> **2 خرداد 1400 , ساعت 40 : 20**
 
-`cacheops:`
-###### use cache in views.py for Low code
+# django-silk
+* ### **list products**
+###### /product/
+###### 176ms overall
+###### 8ms on queries
+
+* ### **detail products**
+###### /product/apple/
+###### 200ms overall
+###### 26ms on queries
+
+* ### **list category**
+###### /category/
+###### 144ms overall
+###### 9ms on queries
+
+* ### **detail category**
+###### /category/mobile/
+###### 195ms overall
+###### 14ms on queries
+
+* ### **list cartItem**
+###### /cart/cartItem/
+###### 210ms overall
+###### 21ms on queries
+
+* ### **detail cartItem**
+###### /cart/cartItem/6/
+###### 202ms overall
+###### 38ms on queries
+
+* ### **list cart**
+###### /cart/cart/
+###### 170ms overall
+###### 14ms on queries
+
+* ### **detail cart**
+###### /cart/cart/3/
+###### 192ms overall
+###### 41ms on queries
