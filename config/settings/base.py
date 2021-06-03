@@ -24,7 +24,10 @@ try:
     from .keys import SECRET_KEY
     from .local import *
 except Exception:
-    pass
+    POSTGRES_NAME = 'DB_NAME'
+    POSTGRES_USER = 'DB_USER'
+    POSTGRES_PASSWORD = 'DB_PASSWORD'
+    POSTGRES_HOST = 'DB_HOST'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
