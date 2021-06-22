@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     'users.apps.MyUserConfig',
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',
+    'ticketing.apps.TicketingConfig',
 ]
 
 LOCAL_APPS = [
