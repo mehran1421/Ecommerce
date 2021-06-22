@@ -72,6 +72,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'extension.middleware.BlockedIpMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -197,3 +199,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'users.User'
 
 DATABASES_ROUTERS = ['routers.db_routers.CacheDatabase', ]
+
+BLOCKED_IPS = [
+    # '127.0.0.1'
+]
