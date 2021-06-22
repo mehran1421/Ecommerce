@@ -11,11 +11,12 @@ from users.serializers import UserListSerializers
 
 
 class TicketListSerializer(ModelSerializer):
-    # detail = HyperlinkedIdentityField(view_name='product:figure-detail')
+    detail = HyperlinkedIdentityField(view_name='ticket:ticket-detail')
 
     class Meta:
         model = Ticket
         fields = [
+            'detail',
             'user',
             'create',
             'title',
@@ -42,7 +43,6 @@ class TicketCreateSerializer(ModelSerializer):
             'user',
             'description',
             'title',
-            'status',
         ]
 
 
