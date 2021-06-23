@@ -5,7 +5,7 @@ from rest_framework.serializers import (
 )
 from .models import (
     Ticket,
-    Answare
+    QuestionAndAnswer
 )
 from users.serializers import UserListSerializers
 
@@ -17,21 +17,27 @@ class TicketListSerializer(ModelSerializer):
         model = Ticket
         fields = [
             'detail',
-            'user',
-            'create',
             'title',
+            'create',
             'status',
         ]
 
 
 class TicketDetailSerializer(ModelSerializer):
+    answer = HyperlinkedIdentityField(view_name='ticket:ticket-answer-ticket')
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    user = SerializerMethodField('get_username')
+
     class Meta:
         model = Ticket
         fields = [
-            'user',
-            'description',
-            'create',
+            'answer',
             'title',
+            'user',
+            'create',
             'status',
         ]
 
@@ -40,40 +46,39 @@ class TicketCreateSerializer(ModelSerializer):
     class Meta:
         model = Ticket
         fields = [
-            'user',
-            'description',
+            'status',
             'title',
         ]
 
 
 class AnswerListSerializer(ModelSerializer):
-    # detail = HyperlinkedIdentityField(view_name='product:figure-detail')
+    detail = HyperlinkedIdentityField(view_name='ticket:answer-detail')
 
     class Meta:
-        model = Answare
+        model = QuestionAndAnswer
         fields = [
+            'detail',
             'user',
             'create',
-            'ticket',
+            'question',
         ]
 
 
 class AnswerDetailSerializer(ModelSerializer):
     class Meta:
-        model = Answare
+        model = QuestionAndAnswer
         fields = [
             'user',
-            'description',
             'create',
-            'status',
+            'description',
+            'question',
         ]
 
 
 class AnswerCreateSerializer(ModelSerializer):
     class Meta:
-        model = Answare
+        model = QuestionAndAnswer
         fields = [
-            'user',
             'description',
-            'status',
+            'question',
         ]
