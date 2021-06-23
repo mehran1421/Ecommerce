@@ -1,16 +1,16 @@
 from django.contrib import admin
-from .models import Ticket, Answare
+from .models import Ticket, QuestionAndAnswer
 
 
 class AnswerAdminInline(admin.TabularInline):
-    model = Answare
-    fields = ('description', 'user')
+    model = QuestionAndAnswer
+    fields = ('description', 'user','question')
 
 
 @admin.register(Ticket)
 class TicketAdminInline(admin.ModelAdmin):
-    fields = ('title', 'description', 'user', 'status')
-    list_display = ('title', 'description', 'user', 'status')
+    fields = ('title', 'user', 'status')
+    list_display = ('title', 'user', 'status')
     inlines = (AnswerAdminInline,)
 
 
