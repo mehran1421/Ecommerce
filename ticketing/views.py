@@ -1,23 +1,79 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     TicketCreateSerializer,
     TicketDetailSerializer,
     TicketListSerializer,
-    AnswerCreateSerializer,
-    AnswerDetailSerializer,
     AnswerListSerializer,
+    AnswerDetailSerializer,
+    AnswerCreateSerializer
+
 )
 from .models import (
     Ticket,
-    Answare
+    QuestionAndAnswer
 )
 
 
+class QuestionAnswerViews(ViewSet):
+    def get_permissions(self):
+        permission_classes = (IsAuthenticated,)
+        return [permission() for permission in permission_classes]
+
+    def list(self, request):
+        answer = QuestionAndAnswer.objects.filter(user=request.user)
+        serializer = AnswerListSerializer(answer, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        try:
+            serializer = AnswerCreateSerializer(data=request.data)
+
+            if serializer.is_valid() and serializer.data.get('question').status != 'cl':
+                serializer.save(user=request.user)
+            else:
+                return Response({'status': 'Bad Request'}, status=400)
+
+            return Response({'status': 'ok'}, status=200)
+        except Exception:
+            return Response({'status': 'Internal Server Error'}, status=500)
+
+    def retrieve(self, request, pk=None):
+        if request.user.is_superuser:
+            queryset = QuestionAndAnswer.objects.filter(pk=pk)
+        else:
+            queryset = QuestionAndAnswer.objects.filter(pk=pk, user=request.user)
+        serializer = AnswerDetailSerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        if request.user.is_superuser:
+            answer = QuestionAndAnswer.objects.get(pk=pk)
+        else:
+            answer = QuestionAndAnswer.objects.get(pk=pk, user=request.user)
+
+        serializer = AnswerDetailSerializer(answer, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'Internal Server Error'}, status=500)
+
+    def destroy(self, request, pk=None):
+        if request.user.is_superuser:
+            answer = QuestionAndAnswer.objects.get(pk=pk)
+        else:
+            answer = QuestionAndAnswer.objects.get(pk=pk, user=request.user)
+        answer.delete()
+        return Response({'status': 'ok'}, status=200)
+
+
 class TicketViews(ViewSet):
-    # authintication
+    def get_permissions(self):
+        permission_classes = (IsAuthenticated,)
+        return [permission() for permission in permission_classes]
+
     def list(self, request):
         if request.user.is_superuser:
             ticket = Ticket.objects.all()
@@ -30,7 +86,7 @@ class TicketViews(ViewSet):
         try:
             serializer = TicketCreateSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save(status='bn', user=request.user)
+                serializer.save(status='de', user=request.user)
             else:
                 return Response({'status': 'Bad Request'}, status=400)
 
@@ -68,3 +124,10 @@ class TicketViews(ViewSet):
             ticket = Ticket.objects.get(pk=pk, user=request.user)
         ticket.delete()
         return Response({'status': 'ok'}, status=200)
+
+    @action(detail=True, methods=['get'], name='answer-ticket')
+    def answer_ticket(self, request, pk=None):
+        queryset = Ticket.objects.get(pk=pk)
+        answer = QuestionAndAnswer.objects.filter(question=queryset)
+        serializer = AnswerListSerializer(answer, context={'request': request}, many=True)
+        return Response(serializer.data)
