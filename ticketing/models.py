@@ -1,21 +1,19 @@
 from django.db import models
 from users.models import User
-from django.utils import timezone
 
 
-class TimeTextField(models.Model):
+class TicketCreatorTime(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.TextField()
     create = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         abstract = True
 
 
-class Ticket(TimeTextField):
+class Ticket(TicketCreatorTime):
     STATUS_CHOICE = (
         ('cl', 'بسته شده'),
-        ('bn', 'بررسی نشده'),
+        ('de', 'در انتظار'),
         ('bs', 'بررسی شده'),
     )
 
@@ -29,8 +27,9 @@ class Ticket(TimeTextField):
         ordering = ['create']
 
 
-class Answare(TimeTextField):
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+class QuestionAndAnswer(TicketCreatorTime):
+    description = models.TextField()
+    question = models.ForeignKey(Ticket, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.ticket.title
+    class Meta:
+        ordering = ['create']
