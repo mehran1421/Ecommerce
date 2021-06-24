@@ -6,6 +6,6 @@ except Exception:
     pass
 
 DEBUG = False
-ALLOWED_HOSTS = ['ip-address', 'www.example.com']
+ALLOWED_HOSTS = ['8000', 'www.myecommerce1421.com']
 
 
