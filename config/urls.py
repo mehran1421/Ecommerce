@@ -42,6 +42,8 @@ urlpatterns = [
     path('auth/', include('users.urls')),
     path('cart/', include('carts.urls')),
     path('payment/', include('payment.urls')),
+    path('notice/', include('notices.urls')),
+
     path('api/rest-auth/', include('dj_rest_auth.urls')),
     path('api/rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 
