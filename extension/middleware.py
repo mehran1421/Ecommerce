@@ -1,4 +1,3 @@
-from config.settings.base import BLOCKED_IPS
 from django.http import HttpResponseForbidden
 from admin_honeypot.models import LoginAttempt
 
