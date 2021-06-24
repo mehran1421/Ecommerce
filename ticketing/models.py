@@ -20,11 +20,11 @@ class Ticket(TicketCreatorTime):
     title = models.CharField(max_length=50)
     status = models.CharField(max_length=2, choices=STATUS_CHOICE)
 
-    def __str__(self):
-        return self.title
-
     class Meta:
         ordering = ['create']
+
+    def __str__(self):
+        return self.title
 
 
 class QuestionAndAnswer(TicketCreatorTime):

@@ -55,7 +55,7 @@ class QuestionAnswerViews(ViewSet):
             answer = QuestionAndAnswer.objects.get(pk=pk, user=request.user)
 
         serializer = AnswerDetailSerializer(answer, data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid() and serializer.data.get('question').status != 'cl':
             serializer.save()
             return Response({'status': 'ok'}, status=200)
         return Response({'status': 'Internal Server Error'}, status=500)
@@ -65,6 +65,9 @@ class QuestionAnswerViews(ViewSet):
             answer = QuestionAndAnswer.objects.get(pk=pk)
         else:
             answer = QuestionAndAnswer.objects.get(pk=pk, user=request.user)
+            if answer.question.status == 'cl':
+                return Response({'status': 'ticket is closed'}, status=403)
+
         answer.delete()
         return Response({'status': 'ok'}, status=200)
 

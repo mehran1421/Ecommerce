@@ -7,7 +7,6 @@ from .models import (
     Ticket,
     QuestionAndAnswer
 )
-from users.serializers import UserListSerializers
 
 
 class TicketListSerializer(ModelSerializer):
