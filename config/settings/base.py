@@ -60,6 +60,7 @@ LOCAL_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'drf_yasg',
+    'admin_honeypot'
 ]
 
 INSTALLED_APPS = DEFAULT_APP + THIRD_PARTY_APPS + LOCAL_APPS
