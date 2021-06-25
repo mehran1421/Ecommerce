@@ -8,7 +8,7 @@ class BlockedIpMiddleware(object):
 
     def __call__(self, request):
         for i in LoginAttempt.objects.all():
-            if request.META['REMOTE_ADDR'] not in i.ip_address:
+            if request.META['REMOTE_ADDR'] in i.ip_address:
                 return HttpResponseForbidden('<h1>Forbidden</h1>')
         response = self.get_response(request)
         return response
