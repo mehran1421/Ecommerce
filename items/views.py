@@ -82,10 +82,10 @@ class ProductViews(ViewSet):
         :return:
         """
         if request.user.is_superuser:
-            queryset = Product.objects.filter(slug=slug)
+            queryset = Product.objects.get(slug__exact=slug)
         else:
-            queryset = Product.objects.filter(slug=slug, status=True, choice='p')
-        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
+            queryset = Product.objects.get(slug__exact=slug, status=True, choice='p')
+        serializer = ProductDetailSerializer(queryset, context={'request': request})
         return Response(serializer.data)
 
     @silk_profile(name='update products')
@@ -99,9 +99,9 @@ class ProductViews(ViewSet):
         :return:
         """
         if request.user.is_superuser:
-            product = Product.objects.get(slug=slug)
+            product = Product.objects.get(slug__exact=slug)
         else:
-            product = Product.objects.get(slug=slug, seller=request.user)
+            product = Product.objects.get(slug__exact=slug, seller=request.user)
 
         serializer = ProductDetailSerializer(product, data=request.data)
         if serializer.is_valid():
@@ -122,9 +122,9 @@ class ProductViews(ViewSet):
                 :return:
         """
         if request.user.is_superuser:
-            product = Product.objects.get(slug=slug)
+            product = Product.objects.get(slug__exact=slug)
         else:
-            product = Product.objects.get(slug=slug, seller=request.user)
+            product = Product.objects.get(slug__exact=slug, seller=request.user)
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
@@ -176,7 +176,7 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        queryset = Category.objects.filter(slug=slug, status=True)
+        queryset = Category.objects.filter(slug__exact=slug, status=True)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -200,7 +200,7 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        category = Category.objects.get(slug=slug)
+        category = Category.objects.get(slug__exact=slug)
         serializer = CategoryDetailSerializer(category, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -215,7 +215,7 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        category = Category.objects.get(slug=slug)
+        category = Category.objects.get(slug__exact=slug)
         if request.user.is_superuser:
             category.delete()
         return Response({'status': 'ok'}, status=200)
@@ -230,7 +230,7 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        queryset = Category.objects.filter(slug=slug, status=True).first()
+        queryset = Category.objects.filter(slug__exact=slug, status=True).first()
         products = Product.objects.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
@@ -251,7 +251,7 @@ class FigureViews(ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = FigureField.objects.get(pk=pk)
+        queryset = FigureField.objects.get(pk__exact=pk)
         serializer = FigureFieldDetailSerializer(queryset)
         return Response(serializer.data)
 
@@ -268,7 +268,7 @@ class FigureViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        figure = FigureField.objects.get(pk=pk)
+        figure = FigureField.objects.get(pk__exact=pk)
         serializer = FigureFieldDetailSerializer(figure, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -282,7 +282,7 @@ class FigureViews(ViewSet):
         :param pk:
         :return:
         """
-        figure = FigureField.objects.get(pk=pk)
+        figure = FigureField.objects.get(pk__exact=pk)
         if request.user.is_superuser:
             figure.delete()
         return Response({'status': 'ok'}, status=200)
