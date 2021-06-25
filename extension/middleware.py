@@ -1,5 +1,5 @@
-from config.settings.base import BLOCKED_IPS
 from django.http import HttpResponseForbidden
+from admin_honeypot.models import LoginAttempt
 
 
 class BlockedIpMiddleware(object):
@@ -7,7 +7,8 @@ class BlockedIpMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.META['REMOTE_ADDR'] in BLOCKED_IPS:
-            return HttpResponseForbidden('<h1>Forbidden</h1>')
+        for i in LoginAttempt.objects.all():
+            if request.META['REMOTE_ADDR'] not in i.ip_address:
+                return HttpResponseForbidden('<h1>Forbidden</h1>')
         response = self.get_response(request)
         return response
