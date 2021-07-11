@@ -1,10 +1,12 @@
 from extension.utils import unique_slug_generator
+from django.core.cache import caches, cache
 from django.dispatch import receiver
-from .models import Product
+from .models import Product, Category, FigureField
 from carts.models import CartItem
 from django.db.models.signals import (
     pre_save,
-    post_save
+    post_save,
+    pre_delete,
 )
 
 
@@ -29,3 +31,24 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
             i.save()
     except Exception:
         pass
+
+    caches['all_products'].delete('products')
+    cache.delete(f'product_{instance.slug}')
+
+
+@receiver(pre_delete, sender=Product)
+def pre_delete_receiver_product(sender, instance, *args, **kwargs):
+    caches['all_products'].delete('products')
+    cache.delete(f'product_{instance.slug}')
+
+
+@receiver([pre_delete, pre_save], sender=Category)
+def pre_delete_receiver_category(sender, instance, *args, **kwargs):
+    # if change or delete ===> delete cache
+    cache.delete('category')
+
+
+@receiver([pre_delete, pre_save], sender=FigureField)
+def pre_delete_receiver_category(sender, instance, *args, **kwargs):
+    # if change or delete ===> delete cache
+    cache.delete('figure')

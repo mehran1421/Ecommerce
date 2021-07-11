@@ -9,8 +9,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 DEV_APP = [
-    'silk',
+    'silk'
 ]
+
 INSTALLED_APPS += DEV_APP
 
 DEV_MID = [

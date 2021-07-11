@@ -3,6 +3,7 @@ import string
 from . import jalali
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.cache import caches, cache
 
 
 def persian_number_converter(mystr):
@@ -78,3 +79,41 @@ def unique_slug_generator(instance, new_slug=None):
     return slug
 
 
+def productCacheDatabase(request, name, model):
+    obj = caches['all_products'].get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        caches['all_products'].set(name, obj)
+    return obj
+
+
+def cacheDetailProduct(request, name, slug, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.get(slug=slug, status=True, choice='p')
+        cache.set(name, obj)
+    return obj
+
+
+def cacheCategoryOrFigur(request, name, model):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.all()
+        cache.set(name, obj)
+    return obj
+
+
+def cacheCart(request, name, model, user):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.filter(user=user)
+        cache.set(f"cart_{user.email}", obj)
+    return obj
+
+
+def cacheCartItem(request, name, model, cart):
+    obj = cache.get(name, None)
+    if obj is None:
+        obj = model.objects.filter(cart=cart)
+        cache.set(name, obj)
+    return obj

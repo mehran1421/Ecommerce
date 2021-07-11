@@ -3,10 +3,11 @@ from silk.profiling.profiler import silk_profile
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
+from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
 from .permissions import (
     IsSuperUserOrIsSeller,
-    IsSuperUserOrReadonly,
-    IsSellerOrSuperUserObject
+    IsSellerOrSuperUserObject,
+    IsSuperUserOrReadonly
 )
 from .serializers import (
     ProductSerializer,
@@ -46,10 +47,10 @@ class ProductViews(ViewSet):
         :param request:
         :return:
         """
-        if request.user.is_superuser:
-            product = Product.objects.all()
-        else:
-            product = Product.objects.filter(status=True, choice='p')
+        product = productCacheDatabase(request, 'products', Product)
+        if not request.user.is_superuser:
+            obj = product.filter(status=True, choice='p')
+            product = obj
         serializer = ProductSerializer(product, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -72,38 +73,35 @@ class ProductViews(ViewSet):
         except Exception:
             return Response({'status': 'Internal Server Error'}, status=500)
 
-    @silk_profile(name='retrieve products')
+    @silk_profile(name='detail products')
     def retrieve(self, request, slug=None):
         """
-        superuser can see all object detail
-        but other user just objects that status=True,choice='p'
-        :param request:
-        :param slug:
-        :return:
+               superuser can see all object detail
+               but other user just objects that status=True,choice='p'
+               :param request:
+               :param slug:
+               :return:
         """
         if request.user.is_superuser:
             queryset = Product.objects.get(slug=slug)
         else:
-            queryset = Product.objects.get(slug=slug, status=True, choice='p')
-        serializer = ProductDetailSerializer(queryset, context={'request': request})
+            queryset = cacheDetailProduct(request, f'product_{slug}', slug, Product)
 
+        serializer = ProductDetailSerializer(queryset, context={'request': request})
         return Response(serializer.data)
 
     @silk_profile(name='update products')
     def update(self, request, slug=None):
         """
-        superuser can change all objects
-        but other user if is_seller=True and be seller object just can change owner object
-        if other user update object status=False,choice='d' for dont show site
-        :param request:
-        :param slug:
-        :return:
+           superuser can change all objects
+           but other user if is_seller=True and be seller object just can change owner object
+           if other user update object status=False,choice='d' for dont show site
+           :param request:
+           :param slug:
+           :return:
         """
-        if request.user.is_superuser:
-            product = Product.objects.get(slug__exact=slug)
-        else:
-            product = Product.objects.get(slug__exact=slug, seller=request.user)
-
+        obj = productCacheDatabase(request, 'products', Product)
+        product = obj.filter(slug=slug)
         serializer = ProductDetailSerializer(product, data=request.data)
         if serializer.is_valid():
             if request.user.is_superuser:
@@ -122,10 +120,8 @@ class ProductViews(ViewSet):
                 :param slug:
                 :return:
         """
-        if request.user.is_superuser:
-            product = Product.objects.get(slug__exact=slug)
-        else:
-            product = Product.objects.get(slug__exact=slug, seller=request.user)
+        obj = productCacheDatabase(request, 'products', Product)
+        product = obj.filter(slug=slug)
         product.delete()
         return Response({'status': 'ok'}, status=200)
 
@@ -133,7 +129,8 @@ class ProductViews(ViewSet):
     def product_search(self, request):
         # http://localhost:8000/product/product_search/?search=mehran
         query = self.request.GET.get('search')
-        object_list = Product.objects.filter(
+        objs = productCacheDatabase(request, 'products', Product)
+        object_list = objs.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
             Q(price__iexact=query) |
@@ -165,19 +162,21 @@ class CategoryViews(ViewSet):
         :param request:
         :return:
         """
-        category = Category.objects.filter(status=True)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
+        category = obj.filter(status=True)
         serializer = CategoryListSerializer(category, context={'request': request}, many=True)
         return Response(serializer.data)
 
-    @silk_profile(name='retrieve category')
+    @silk_profile(name='detail category')
     def retrieve(self, request, slug=None):
         """
-        detail category
-        :param request:
-        :param slug:
-        :return:
+                detail category
+                :param request:
+                :param slug:
+                :return:
         """
-        queryset = Category.objects.filter(slug__exact=slug, status=True)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
+        queryset = obj.filter(slug=slug)
         serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -201,7 +200,8 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        category = Category.objects.get(slug__exact=slug)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
+        category = obj.get(slug=slug)
         serializer = CategoryDetailSerializer(category, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -216,7 +216,8 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        category = Category.objects.get(slug__exact=slug)
+        obj = cacheCategoryOrFigur(request, 'category', Category)
+        category = obj.get(slug=slug)
         if request.user.is_superuser:
             category.delete()
         return Response({'status': 'ok'}, status=200)
@@ -231,8 +232,10 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        queryset = Category.objects.filter(slug__exact=slug, status=True).first()
-        products = Product.objects.filter(category=queryset)
+        objCat = cacheCategoryOrFigur(request, 'category', Category)
+        objPro = productCacheDatabase(request, 'products', Product)
+        queryset = objCat.get(slug=slug, status=True)
+        products = objPro.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
 
@@ -247,12 +250,13 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrReadonly,)
 
     def list(self, request):
-        obj = FigureField.objects.all()
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
         serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = FigureField.objects.get(pk__exact=pk)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+        queryset = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(queryset)
         return Response(serializer.data)
 
@@ -269,7 +273,8 @@ class FigureViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        figure = FigureField.objects.get(pk__exact=pk)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+        figure = obj.get(pk=pk)
         serializer = FigureFieldDetailSerializer(figure, data=request.data)
         if serializer.is_valid() and request.user.is_superuser:
             serializer.save()
@@ -283,7 +288,8 @@ class FigureViews(ViewSet):
         :param pk:
         :return:
         """
-        figure = FigureField.objects.get(pk__exact=pk)
+        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+        figure = obj.get(pk=pk)
         if request.user.is_superuser:
             figure.delete()
         return Response({'status': 'ok'}, status=200)

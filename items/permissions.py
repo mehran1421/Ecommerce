@@ -42,7 +42,6 @@ class IsSellerOrSuperUserObject(BasePermission):
          use in:
          1-'update', 'destroy' Product : just superuser
     """
-
     def has_object_permission(self, request, view, obj):
         return bool(
             # get access to superuser
