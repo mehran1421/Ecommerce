@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = [
     'carts.apps.CartsConfig',
     'payment.apps.PaymentConfig',
     'notices.apps.NoticesConfig',
+    'ticketing.apps.TicketingConfig',
 ]
 
 LOCAL_APPS = [
@@ -227,10 +228,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # for custom user models
 AUTH_USER_MODEL = 'users.User'
 
+
 DATABASES_ROUTERS = ['routers.db_routers.CacheDatabase', ]
 
 # celery
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_TASK_SERIALIZER = 'json'
-

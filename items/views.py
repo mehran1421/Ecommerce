@@ -82,10 +82,11 @@ class ProductViews(ViewSet):
         :return:
         """
         if request.user.is_superuser:
-            queryset = Product.objects.filter(slug__exact=slug)
+            queryset = Product.objects.get(slug=slug)
         else:
-            queryset = Product.objects.filter(slug__exact=slug, status=True, choice='p')
-        serializer = ProductDetailSerializer(queryset, context={'request': request}, many=True)
+            queryset = Product.objects.get(slug=slug, status=True, choice='p')
+        serializer = ProductDetailSerializer(queryset, context={'request': request})
+
         return Response(serializer.data)
 
     @silk_profile(name='update products')
