@@ -1,3 +1,4 @@
+import json
 from rest_framework.viewsets import ViewSet
 from silk.profiling.profiler import silk_profile
 from rest_framework.response import Response
@@ -64,14 +65,14 @@ class ProductViews(ViewSet):
         """
         try:
             serializer = InputProductSerializers(data=request.data)
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save(choice='d', status=False, seller=request.user)
             else:
-                return Response({'status': 'Bad Request'}, status=400)
+                return Response({'status': 'Serializer information is not valid'}, status=500)
 
             return Response({'status': 'ok'}, status=200)
         except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+            return Response({"requirements field": 'no k'}, status=500)
 
     @silk_profile(name='detail products')
     def retrieve(self, request, slug=None):
