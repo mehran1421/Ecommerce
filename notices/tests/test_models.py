@@ -5,7 +5,7 @@ from rest_framework import status
 from ..models import Notice
 
 
-class UserNoticesTestCase(APITestCase):
+class ModelNoticesTestCase(APITestCase):
 
     def setUp(self):
         self.client.post('/api/rest-auth/registration/', data={
