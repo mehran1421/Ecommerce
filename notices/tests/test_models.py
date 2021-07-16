@@ -35,7 +35,6 @@ class UserNoticesTestCase(APITestCase):
 
         notice = Notice.objects.get(email='m.ka@gmail.com')
         self.assertFalse(notice.status)
-        self.assertEqual(notice.pk, 2)
 
     def test_user_update_delete(self):
         """ Test that can not user update notice object """
@@ -52,10 +51,11 @@ class UserNoticesTestCase(APITestCase):
         self.api_authentication()
         self.client.force_authenticate(user=self.super_user)
 
-        user_update = self.client.put('/notice/notice/3/', data={
+        notice = Notice.objects.first()
+        user_update = self.client.put('/notice/notice/4/', data={
             'email': 'fs@gmail.com'
         })
-        user_delete = self.client.delete('/notice/notice/3/')
+        user_delete = self.client.delete('/notice/notice/4/')
 
         self.assertEqual(user_update.status_code, status.HTTP_200_OK)
         self.assertEqual(user_delete.status_code, status.HTTP_200_OK)
