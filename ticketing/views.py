@@ -2,6 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from carts.permissions import IsSuperUser
 from .serializers import (
     TicketCreateSerializer,
     TicketDetailSerializer,
@@ -30,8 +31,10 @@ class QuestionAnswerViews(ViewSet):
     def create(self, request):
         try:
             serializer = AnswerCreateSerializer(data=request.data)
-
-            if serializer.is_valid() and serializer.data.get('question').status != 'cl':
+            tick_pk = request.data['question']
+            ticket = Ticket.objects.get(pk=tick_pk)
+            print(ticket.status)
+            if serializer.is_valid() and ticket.status != 'cl':
                 serializer.save(user=request.user)
             else:
                 return Response({'status': 'Bad Request'}, status=400)
@@ -74,7 +77,10 @@ class QuestionAnswerViews(ViewSet):
 
 class TicketViews(ViewSet):
     def get_permissions(self):
-        permission_classes = (IsAuthenticated,)
+        if self.action in ['update', 'delete', 'retrieve']:
+            permission_classes = (IsSuperUser,)
+        else:
+            permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
 
     def list(self, request):
@@ -112,7 +118,7 @@ class TicketViews(ViewSet):
             ticket = Ticket.objects.get(pk=pk, user=request.user)
 
         serializer = TicketDetailSerializer(ticket, data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             if request.user.is_superuser:
                 serializer.save()
             else:
