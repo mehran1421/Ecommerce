@@ -24,4 +24,6 @@ class AdminSiteTests(TestCase):
         res = self.client.get('/secret/ticketing/ticket/')
         ticket = Ticket.objects.first()
 
+        print(ticket)
+        print(ticket.title)
         self.assertContains(res, ticket.title)

@@ -15,7 +15,7 @@ class AdminSiteTests(TestCase):
         self.client.force_login(self.admin_user)
 
     def test_notices_listed(self):
-        """ test that noticed objects are listed """
+        """ tests that noticed objects are listed """
 
         notice = Notice.objects.create(email='mss@gmail.com')
 

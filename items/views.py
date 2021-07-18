@@ -1,4 +1,3 @@
-import json
 from rest_framework.viewsets import ViewSet
 from silk.profiling.profiler import silk_profile
 from rest_framework.response import Response
@@ -64,11 +63,14 @@ class ProductViews(ViewSet):
         :return:
         """
         try:
+            cat = Category.objects.first()
+
             serializer = InputProductSerializers(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save(choice='d', status=False, seller=request.user)
+            if serializer.is_valid():
+                serializer.save(choice='d', status=False, seller=request.user, category=cat)
             else:
-                return Response({'status': 'Serializer information is not valid'}, status=500)
+                print(serializer.errors)
+                return Response({'status': 'Serializer information is not valid'}, status=400)
 
             return Response({'status': 'ok'}, status=200)
         except Exception:

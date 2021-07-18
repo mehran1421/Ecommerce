@@ -154,9 +154,7 @@ class InputProductSerializers(ModelSerializer):
         model = Product
         fields = [
             'title',
-            'category',
             'description',
-            'seller',
-            'thumbnail',
+            'thumbnail'
             'price',
         ]
