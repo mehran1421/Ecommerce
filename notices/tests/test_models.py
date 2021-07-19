@@ -1,34 +1,19 @@
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase
+from ..serializers import NoticeListSerializer
+from config.base_api_test import BaseTest
+from django.urls import reverse
 from rest_framework import status
 from ..models import Notice
 
 
-class ModelNoticesTestCase(APITestCase):
-
-    def setUp(self):
-        self.client.post('/api/rest-auth/registration/', data={
-            'username': 'mehran', 'email': 'm.dlfjs@gmail.com', 'password1': 'mehran1421', 'password2': 'mehran1421'
-        })
-        self.super_user = get_user_model().objects.get(username='mehran')
-        self.super_user.is_superuser = True
-        self.super_user.save()
-        self.token = Token.objects.create(user=self.super_user)
-
-        data = {
-            'email': 'm.ka@gmail.com',
-        }
-        self.response = self.client.post('/notice/notice/', data=data)
-
-    def api_authentication(self):
-        """ for login user """
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token.key)
+class ModelNoticesTestCase(BaseTest):
 
     def test_create_notice(self):
         """ Test create notice with email """
-
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        response = self.client.post('/notice/notice/', data={
+            'email': 'm.j@gmail.com',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Notice.objects.all().count(), 2)
 
     def test_status_model_notice(self):
         """ Test for status is False after create """
@@ -37,25 +22,46 @@ class ModelNoticesTestCase(APITestCase):
         self.assertFalse(notice.status)
 
     def test_user_update_delete(self):
-        """ Test that can not user update notice object """
+        """
+        Test that can not user update notice object
+        superuser can update it but user can not update it
+        """
 
-        user_update = self.client.put('/notice/notice/2/')
-        user_delete = self.client.delete('/notice/notice/2/')
-
-        self.assertEqual(user_update.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(user_delete.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_super_user_update_delete(self):
-        """ Test that superuser can update or delete notice object """
-
-        self.api_authentication()
-        self.client.force_authenticate(user=self.super_user)
-
-        notice = Notice.objects.first()
-        user_update = self.client.put('/notice/notice/4/', data={
-            'email': 'fs@gmail.com'
+        self.client.force_authenticate(self.user)
+        user_update = self.client.put(reverse('notice:notice-detail', args=[Notice.objects.first().pk]), data={
+            'email': 'ss@gmail.com'
         })
-        user_delete = self.client.delete('/notice/notice/4/')
 
-        self.assertEqual(user_update.status_code, status.HTTP_200_OK)
-        self.assertEqual(user_delete.status_code, status.HTTP_200_OK)
+        self.assertEqual(user_update.status_code, status.HTTP_403_FORBIDDEN)
+        self.user.is_superuser = True
+
+        super_user_update = self.client.put(reverse('notice:notice-detail', args=[Notice.objects.first().pk]), data={
+            'email': 'ss@gmail.com'
+        })
+
+        self.assertEqual(super_user_update.status_code, status.HTTP_200_OK)
+
+    def test_user_delete_notice_object(self):
+        """
+        Test can user delete object
+        superuser can delete it but user can not delete it
+        """
+
+        self.client.force_authenticate(self.user)
+        user_update = self.client.delete(reverse('notice:notice-detail', args=[Notice.objects.first().pk]))
+
+        self.assertEqual(user_update.status_code, status.HTTP_403_FORBIDDEN)
+        self.user.is_superuser = True
+
+        super_user_update = self.client.delete(reverse('notice:notice-detail', args=[Notice.objects.first().pk]))
+
+        self.assertEqual(super_user_update.status_code, status.HTTP_200_OK)
+
+    def test_output_list_serilizer(self):
+        """ Test output serializer """
+        data = {
+            "email": "vvf@gmail.com"
+        }
+        serializer = NoticeListSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.data['email'], data['email'])

@@ -4,7 +4,7 @@ from ..models import Notice
 from django.urls import reverse
 
 
-class AdminSiteTests(TestCase):
+class AdminSiteNoticesTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.admin_user = get_user_model().objects.create_superuser(
@@ -22,4 +22,3 @@ class AdminSiteTests(TestCase):
         res = self.client.get('/secret/notices/notice/')
 
         self.assertContains(res, notice.email)
-

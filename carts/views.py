@@ -25,7 +25,7 @@ class CartItemViews(ViewSet):
     """
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'destroy']:
+        if self.action in ['update', 'destroy']:
             permission_classes = (IsSuperUserOrSelfObject,)
         else:
             permission_classes = (IsAuthenticated,)
@@ -39,7 +39,7 @@ class CartItemViews(ViewSet):
         """
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-            cart_obj = obj.get(is_pay=False)
+            cart_obj = obj.filter(is_pay=False).first()
             query = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -58,7 +58,6 @@ class CartItemViews(ViewSet):
             cart_obj = obj.get(is_pay=False)
             cart_items = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
             queryset = cart_items.get(pk=pk)
-            print(queryset)
             serializer = CartItemDetailSerializers(queryset, context={'request': request})
             return Response(serializer.data)
         except Exception:
@@ -110,16 +109,16 @@ class CartItemViews(ViewSet):
             cart = obj.get(is_pay=False)
             cart_items = cacheCartItem(request, f'cartItem-{cart.user.email}', CartItem, cart)
             queryset = cart_items.get(pk=pk)
-            serializer = CartItemDetailSerializers(queryset, data=request.data)
+            serializer = CartItemInputSerializers(queryset, data=request.data)
             if serializer.is_valid():
                 if request.user.is_superuser:
                     serializer.save()
                 else:
                     serializer.save(cart=cart)
                 return Response({'status': 'ok'}, status=200)
-            return Response({'status': 'Internal Server Error'}, status=500)
+            return Response({'status': 'Internal Server Error'}, status=400)
         except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return Response({'status': 'must you authentications '}, status=500)
 
 
 class CartViews(ViewSet):
@@ -169,13 +168,13 @@ class CartViews(ViewSet):
         obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = Cart.objects.get(pk=pk)
+                cart = Cart.objects.filter(pk=pk, is_pay=False).first()
             else:
-                cart = obj.get(is_pay=False, user=request.user, pk=pk)
+                cart = obj.filter(is_pay=False, user=request.user, pk=pk).first()
             cart.delete()
             return Response({'status': 'ok'}, status=200)
         except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return Response({'status': 'error'}, status=400)
 
     def create(self, request):
         """
@@ -185,9 +184,9 @@ class CartViews(ViewSet):
         """
         try:
             cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-            lenCart = cart.objects.filter(is_pay=False).count()
+            len_cart = cart.filter(is_pay=False).count()
             serializer = CartInputSerializers(data=request.data)
-            if serializer.is_valid() and lenCart == 0:
+            if serializer.is_valid() and len_cart == 0:
                 if request.user.is_superuser:
                     serializer.save()
                 else:
@@ -207,13 +206,13 @@ class CartViews(ViewSet):
             else:
                 cart = obj.get(is_pay=False, user=request.user, pk=pk)
 
-            serializer = CartDetailSerializers(cart, data=request.data)
+            serializer = CartInputSerializers(cart, data=request.data)
             if serializer.is_valid():
                 if request.user.is_superuser:
                     serializer.save()
                 else:
                     serializer.save(user=request.user)
                 return Response({'status': 'ok'}, status=200)
-            return Response({'status': 'Internal Server Error'}, status=500)
+            return Response({'status': 'Internal Server Error'}, status=400)
         except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return Response({'status': 'must you authentications '}, status=500)

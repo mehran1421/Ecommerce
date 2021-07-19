@@ -40,7 +40,7 @@ def cart_item_post_save_receiver(sender, instance, *args, **kwargs):
 def cart_post_save_receiver(sender, instance, *args, **kwargs):
     user = instance.user
     cache.delete(f'cart-{user.email}')
-    cache.delete(f'cartItem-{instance.cart.user.email}')
+    # cache.delete(f'cartItem-{instance.cart.user.email}')
 
 
 @receiver(post_save, sender=Cart)

@@ -33,7 +33,6 @@ class QuestionAnswerViews(ViewSet):
             serializer = AnswerCreateSerializer(data=request.data)
             tick_pk = request.data['question']
             ticket = Ticket.objects.get(pk=tick_pk)
-            print(ticket.status)
             if serializer.is_valid() and ticket.status != 'cl':
                 serializer.save(user=request.user)
             else:
@@ -77,7 +76,7 @@ class QuestionAnswerViews(ViewSet):
 
 class TicketViews(ViewSet):
     def get_permissions(self):
-        if self.action in ['update', 'delete', 'retrieve']:
+        if self.action in ['update', 'destroy', 'retrieve']:
             permission_classes = (IsSuperUser,)
         else:
             permission_classes = (IsAuthenticated,)

@@ -113,7 +113,13 @@ def cacheCart(request, name, model, user):
 
 def cacheCartItem(request, name, model, cart):
     obj = cache.get(name, None)
+    print("============")
+    print(obj)
+    print("============")
     if obj is None:
         obj = model.objects.filter(cart=cart)
+        print("**********")
+        print(print(obj))
+        print("************")
         cache.set(name, obj)
     return obj

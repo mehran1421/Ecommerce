@@ -63,11 +63,9 @@ class ProductViews(ViewSet):
         :return:
         """
         try:
-            cat = Category.objects.first()
-
             serializer = InputProductSerializers(data=request.data)
             if serializer.is_valid():
-                serializer.save(choice='d', status=False, seller=request.user, category=cat)
+                serializer.save(choice='d', status=False, seller=request.user)
             else:
                 print(serializer.errors)
                 return Response({'status': 'Serializer information is not valid'}, status=400)
@@ -235,10 +233,10 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        objCat = cacheCategoryOrFigur(request, 'category', Category)
-        objPro = productCacheDatabase(request, 'products', Product)
-        queryset = objCat.get(slug=slug, status=True)
-        products = objPro.filter(category=queryset)
+        obj_cat = cacheCategoryOrFigur(request, 'category', Category)
+        obj_pro = productCacheDatabase(request, 'products', Product)
+        queryset = obj_cat.get(slug=slug, status=True)
+        products = obj_pro.filter(category=queryset)
         serializer = ProductSerializer(products, context={'request': request}, many=True)
         return Response(serializer.data)
 

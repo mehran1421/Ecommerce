@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from .models import Cart, CartItem
-from users.serializers import UserListSerializers,UserDetailSerializers
+from users.serializers import UserListSerializers, UserDetailSerializers
 from items.serializers import ProductSerializer, ProductDetailSerializer
 
 
@@ -16,10 +16,9 @@ class CartItemInputSerializers(ModelSerializer):
 
 class CartInputSerializers(ModelSerializer):
     class Meta:
-        model = CartItem
+        model = Cart
         fields = [
             'user',
-            'items',
         ]
 
 

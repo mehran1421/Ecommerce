@@ -155,6 +155,7 @@ class InputProductSerializers(ModelSerializer):
         fields = [
             'title',
             'description',
-            'thumbnail'
+            'category',
+            'thumbnail',
             'price',
         ]

@@ -17,13 +17,8 @@ class AdminSiteTests(TestCase):
     def test_ticket_listed(self):
         """ test that ticket objects are listed """
 
-        self.client.post('/ticket/ticket/', data={
-            'title': 'check my cart ',
-            'status': 'de'
-        })
+        Ticket.objects.create(title='how are yosfof?', status='de', user=self.admin_user)
         res = self.client.get('/secret/ticketing/ticket/')
         ticket = Ticket.objects.first()
 
-        print(ticket)
-        print(ticket.title)
         self.assertContains(res, ticket.title)
