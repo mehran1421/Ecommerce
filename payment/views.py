@@ -11,6 +11,8 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from carts.models import Cart
+from extension import response
+from extension.exception import CustomException
 from carts.serializers import (
     CartListSerializers,
     CartDetailSerializers
@@ -56,9 +58,9 @@ class Factors(ViewSet):
                 obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart_obj = obj.filter(is_pay=True)
             serializer = FactorListSerializers(cart_obj, context={'request': request}, many=True)
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
         """
@@ -76,9 +78,9 @@ class Factors(ViewSet):
                 cart_obj = obj.get(is_pay=True, pk=pk)
 
             serializer = FactorDetailSerializers(cart_obj)
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
         """
@@ -92,10 +94,9 @@ class Factors(ViewSet):
             serializer = CartDetailSerializers(cart, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response({'status': 'ok'}, status=200)
-            return Response({'status': 'Internal Server Error'}, status=500)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
         """
@@ -106,9 +107,9 @@ class Factors(ViewSet):
         """
         try:
             Cart.objects.get(pk=pk, is_pay=True).delete()
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(message='Deleted object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @action(detail=False, methods=['get'], name='factor-search')
     def pay_search(self, request):
@@ -135,10 +136,8 @@ def send_request(request):
     cart = Cart.objects.filter(user=request.user).first()
     if cart is not None:
         amount = cart.subtotal
-        print(amount)
         result = client.service.PaymentRequest(MERCHANT, amount, description, email, mobile,
                                                f"{CallbackURL}/{cart.pk}/")
-        print(result)
         if result.Status == 100:
             return redirect('https://www.zarinpal.com/pg/StartPay/' + str(result.Authority))
         else:
