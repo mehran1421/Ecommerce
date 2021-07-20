@@ -80,6 +80,7 @@ MIDDLEWARE = [
     # 'django.middleware.security.SecurityMiddleware',
     # my middleware
     'extension.middleware.BlockedIpMiddleware',
+    'extension.middleware.BlockedIpBotUserAgentMiddleware',
 ]
 
 # security
@@ -248,3 +249,8 @@ DATABASES_ROUTERS = ['routers.db_routers.CacheDatabase', ]
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_TASK_SERIALIZER = 'json'
+
+# block ip Bot
+bot_block_ip = [
+
+]

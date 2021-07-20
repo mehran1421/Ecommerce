@@ -12,19 +12,6 @@ from carts.permissions import IsSuperUser
 from .throttling import CustomThrottlingUser
 
 
-# class PhotoView(APIView):
-#     foo_throttle_scope = 'scope_get'
-#     bar_throttle_scope = 'scope_post'
-#
-#     def get_throttles(self):
-#         ret = []
-#         if self.request.method.lower() == 'get':
-#             return [FooScopedRateThrottle(), ]
-#         elif self.request.method.lower() == 'post':
-#             return [BarScopedRateThrottle(), ]
-#         else:
-#             return super(PhotoView, self).get_throttles()
-
 class NoticeViews(ViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
@@ -36,7 +23,7 @@ class NoticeViews(ViewSet):
 
     def get_throttles(self):
         """
-        user just 4 post request per second, for create notice object
+        user can 4 post request per second, for create notice object
         :return:
         """
         if self.action == 'create':
