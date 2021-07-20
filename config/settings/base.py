@@ -78,9 +78,11 @@ MIDDLEWARE = [
 
     # security middleware
     # 'django.middleware.security.SecurityMiddleware',
+
     # my middleware
     'extension.middleware.BlockedIpMiddleware',
     'extension.middleware.BlockedIpBotUserAgentMiddleware',
+    'extension.response.ExceptionHandlerMiddleware',
 ]
 
 # security
@@ -136,7 +138,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '1000/day',
         'user': '10000/day',
-    }
+    },
+    # 'EXCEPTION_HANDLER': 'extension.custom_exception_handler.handle_exception'
 }
 
 REST_AUTH_SERIALIZERS = {
@@ -254,3 +257,5 @@ CELERY_TASK_SERIALIZER = 'json'
 bot_block_ip = [
 
 ]
+
+MESSAGE_SHOW_TYPE = {'TOAST': 'TOAST', 'NONE': 'NONE'}

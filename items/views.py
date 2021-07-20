@@ -1,10 +1,13 @@
 from rest_framework.viewsets import ViewSet
 from silk.profiling.profiler import silk_profile
-from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
 from extension.permissions import IsSuperUserOrIsSeller, IsSuperUserOrOwnerCart
+
+from extension.exception import CustomException
+
+from extension import response
 from .serializers import (
     ProductSerializer,
     ProductDetailSerializer,
@@ -34,20 +37,19 @@ class ProductViews(ViewSet):
 
     lookup_field = 'slug'
 
-    @silk_profile(name='list products')
     def list(self, request):
         """
-        for superuser return all object and
         for other user return Objects that status=True,choice='p'
         :param request:
         :return:
         """
-        product = productCacheDatabase(request, 'products', Product)
-        if not request.user.is_superuser:
+        try:
+            product = productCacheDatabase(request, 'products', Product)
             obj = product.filter(status=True, choice='p')
-            product = obj
-        serializer = ProductSerializer(product, context={'request': request}, many=True)
-        return Response(serializer.data)
+            serializer = ProductSerializer(obj, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='create products')
     def create(self, request):
@@ -59,15 +61,11 @@ class ProductViews(ViewSet):
         """
         try:
             serializer = InputProductSerializers(data=request.data)
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save(choice='d', status=False, seller=request.user)
-            else:
-                print(serializer.errors)
-                return Response({'status': 'Serializer information is not valid'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({"requirements field": 'no k'}, status=500)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='detail products')
     def retrieve(self, request, slug=None):
@@ -78,13 +76,12 @@ class ProductViews(ViewSet):
                :param slug:
                :return:
         """
-        if request.user.is_superuser:
-            queryset = Product.objects.get(slug=slug)
-        else:
+        try:
             queryset = cacheDetailProduct(request, f'product_{slug}', slug, Product)
-
-        serializer = ProductDetailSerializer(queryset, context={'request': request})
-        return Response(serializer.data)
+            serializer = ProductDetailSerializer(queryset, context={'request': request})
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='update products')
     def update(self, request, slug=None):
@@ -96,16 +93,19 @@ class ProductViews(ViewSet):
            :param slug:
            :return:
         """
-        obj = productCacheDatabase(request, 'products', Product)
-        product = obj.filter(slug=slug)
-        serializer = ProductDetailSerializer(product, data=request.data)
-        if serializer.is_valid():
-            if request.user.is_superuser:
-                serializer.save()
-            else:
-                serializer.save(choice='d', status=False, seller=request.user)
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+        try:
+            obj = productCacheDatabase(request, 'products', Product)
+            product = obj.filter(slug=slug)
+            serializer = ProductDetailSerializer(product, data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                if request.user.is_superuser:
+                    serializer.save()
+                else:
+                    serializer.save(choice='d', status=False, seller=request.user)
+
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='destroy products')
     def destroy(self, request, slug=None):
@@ -116,29 +116,35 @@ class ProductViews(ViewSet):
                 :param slug:
                 :return:
         """
-        obj = productCacheDatabase(request, 'products', Product)
-        product = obj.filter(slug=slug)
-        product.delete()
-        return Response({'status': 'ok'}, status=200)
+        try:
+            obj = productCacheDatabase(request, 'products', Product)
+            product = obj.filter(slug=slug)
+            product.delete()
+            return response.SuccessResponse(message='Delete object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message='Instance does not exist.', status=404).send()
 
     @action(detail=False, methods=['get'], name='items-search')
     def product_search(self, request):
         # http://localhost:8000/product/product_search/?search=mehran
-        query = self.request.GET.get('search')
-        objs = productCacheDatabase(request, 'products', Product)
-        object_list = objs.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(price__iexact=query) |
-            Q(category__title__icontains=query) |
-            Q(seller__first_name__icontains=query) |
-            Q(seller__username__icontains=query) |
-            Q(seller__last_name__icontains=query),
-            status=True,
-            choice='p'
-        )
-        serializer = ProductSerializer(object_list, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            query = self.request.GET.get('search')
+            objs = productCacheDatabase(request, 'products', Product)
+            object_list = objs.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(price__iexact=query) |
+                Q(category__title__icontains=query) |
+                Q(seller__first_name__icontains=query) |
+                Q(seller__username__icontains=query) |
+                Q(seller__last_name__icontains=query),
+                status=True,
+                choice='p'
+            )
+            serializer = ProductSerializer(object_list, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
 
 class CategoryViews(ViewSet):
@@ -151,17 +157,19 @@ class CategoryViews(ViewSet):
 
     lookup_field = 'slug'
 
-    @silk_profile(name='list category')
     def list(self, request):
         """
         list all category
         :param request:
         :return:
         """
-        obj = cacheCategoryOrFigur(request, 'category', Category)
-        category = obj.filter(status=True)
-        serializer = CategoryListSerializer(category, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj = cacheCategoryOrFigur(request, 'category', Category)
+            category = obj.filter(status=True)
+            serializer = CategoryListSerializer(category, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='detail category')
     def retrieve(self, request, slug=None):
@@ -171,22 +179,23 @@ class CategoryViews(ViewSet):
                 :param slug:
                 :return:
         """
-        obj = cacheCategoryOrFigur(request, 'category', Category)
-        queryset = obj.filter(slug=slug)
-        serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj = cacheCategoryOrFigur(request, 'category', Category)
+            queryset = obj.filter(slug=slug)
+            serializer = CategoryDetailSerializer(queryset, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
-    def create(self, request):
+    @staticmethod
+    def create(request):
         try:
             serializer = CategoryInputSerializer(data=request.data)
             if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
-            else:
-                return Response({'status': 'Bad Request'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='update category')
     def update(self, request, slug=None):
@@ -196,13 +205,15 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        obj = cacheCategoryOrFigur(request, 'category', Category)
-        category = obj.get(slug=slug)
-        serializer = CategoryDetailSerializer(category, data=request.data)
-        if serializer.is_valid() and request.user.is_superuser:
-            serializer.save()
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+        try:
+            obj = cacheCategoryOrFigur(request, 'category', Category)
+            category = obj.get(slug=slug)
+            serializer = CategoryDetailSerializer(category, data=request.data)
+            if serializer.is_valid() and request.user.is_superuser:
+                serializer.save()
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     @silk_profile(name='destroy category')
     def destroy(self, request, slug=None):
@@ -212,11 +223,13 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        obj = cacheCategoryOrFigur(request, 'category', Category)
-        category = obj.get(slug=slug)
-        if request.user.is_superuser:
+        try:
+            obj = cacheCategoryOrFigur(request, 'category', Category)
+            category = obj.get(slug=slug)
             category.delete()
-        return Response({'status': 'ok'}, status=200)
+            return response.SuccessResponse(message='Delete object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     # @silk_profile(name='product in category')
     @action(detail=True, methods=['get'], name='product-cat')
@@ -228,12 +241,15 @@ class CategoryViews(ViewSet):
         :param slug:
         :return:
         """
-        obj_cat = cacheCategoryOrFigur(request, 'category', Category)
-        obj_pro = productCacheDatabase(request, 'products', Product)
-        queryset = obj_cat.get(slug=slug, status=True)
-        products = obj_pro.filter(category=queryset)
-        serializer = ProductSerializer(products, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj_cat = cacheCategoryOrFigur(request, 'category', Category)
+            obj_pro = productCacheDatabase(request, 'products', Product)
+            queryset = obj_cat.get(slug=slug, status=True)
+            products = obj_pro.filter(category=queryset)
+            serializer = ProductSerializer(products, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
 
 class FigureViews(ViewSet):
@@ -246,36 +262,41 @@ class FigureViews(ViewSet):
     permission_classes = (IsSuperUserOrOwnerCart,)
 
     def list(self, request):
-        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
-        serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+            serializer = FigureFieldSerializer(obj, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
-        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
-        queryset = obj.get(pk=pk)
-        serializer = FigureFieldDetailSerializer(queryset)
-        return Response(serializer.data)
+        try:
+            obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+            queryset = obj.get(pk=pk)
+            serializer = FigureFieldDetailSerializer(queryset)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def create(self, request):
         try:
             serializer = FigureFieldDetailSerializer(data=request.data)
             if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
-            else:
-                return Response({'status': 'Bad Request'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
-        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
-        figure = obj.get(pk=pk)
-        serializer = FigureFieldDetailSerializer(figure, data=request.data)
-        if serializer.is_valid() and request.user.is_superuser:
-            serializer.save()
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+        try:
+            obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+            figure = obj.get(pk=pk)
+            serializer = FigureFieldDetailSerializer(figure, data=request.data)
+            if serializer.is_valid() and request.user.is_superuser:
+                serializer.save()
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
         """
@@ -284,8 +305,10 @@ class FigureViews(ViewSet):
         :param pk:
         :return:
         """
-        obj = cacheCategoryOrFigur(request, 'figure', FigureField)
-        figure = obj.get(pk=pk)
-        if request.user.is_superuser:
+        try:
+            obj = cacheCategoryOrFigur(request, 'figure', FigureField)
+            figure = obj.get(pk=pk)
             figure.delete()
-        return Response({'status': 'ok'}, status=200)
+            return response.SuccessResponse(message='Deleted object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
