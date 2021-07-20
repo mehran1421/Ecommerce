@@ -25,8 +25,18 @@ from .models import (
 
 
 class ProductViews(ViewSet):
+    """
+    use cashing product to database cache and other object to redis
+    productCacheDatabase ==> extension/utils.py ==> cache all product to a row on database
+    cacheDetailProduct ==> extension/utils.py ==> cache detail product that user see them to redis
+
+    """
 
     def get_permissions(self):
+        """
+        IsSuperUserOrIsSeller ==> if request.user.seller == True or product object is him user
+        :return:
+        """
         if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrIsSeller,)
         else:
@@ -44,6 +54,8 @@ class ProductViews(ViewSet):
         """
         try:
             product = productCacheDatabase(request, 'products', Product)
+
+            # show to user , object product that status = True and superuser has approved them
             obj = product.filter(status=True, choice='p')
             serializer = ProductSerializer(obj, context={'request': request}, many=True)
             return response.SuccessResponse(serializer.data).send()
@@ -61,6 +73,7 @@ class ProductViews(ViewSet):
         try:
             serializer = InputProductSerializers(data=request.data)
             if serializer.is_valid(raise_exception=True):
+                # when superuser has approved it, dont show to user ==> choice = 'd' and status = False
                 serializer.save(choice='d', status=False, seller=request.user)
                 return response.SuccessResponse(serializer.data).send()
         except CustomException as e:
@@ -147,7 +160,17 @@ class ProductViews(ViewSet):
 
 
 class CategoryViews(ViewSet):
+    """
+    cacheCategoryOrFigur ==> extension/utils.py ==> cache all category object to redis
+    show user category list and just superuser create it
+    """
+
     def get_permissions(self):
+        """
+        IsSuperUserOrOwnerCart ==> extension/permission.py ==> if user is superuser or
+        object product for him access to site
+        :return:
+        """
         if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrOwnerCart,)
         else:
@@ -158,7 +181,7 @@ class CategoryViews(ViewSet):
 
     def list(self, request):
         """
-        list all category
+        list all category for all user
         :param request:
         :return:
         """
