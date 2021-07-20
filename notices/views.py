@@ -9,7 +9,21 @@ from .serializers import (
 )
 from .models import Notice
 from carts.permissions import IsSuperUser
+from .throttling import CustomThrottlingUser
 
+
+# class PhotoView(APIView):
+#     foo_throttle_scope = 'scope_get'
+#     bar_throttle_scope = 'scope_post'
+#
+#     def get_throttles(self):
+#         ret = []
+#         if self.request.method.lower() == 'get':
+#             return [FooScopedRateThrottle(), ]
+#         elif self.request.method.lower() == 'post':
+#             return [BarScopedRateThrottle(), ]
+#         else:
+#             return super(PhotoView, self).get_throttles()
 
 class NoticeViews(ViewSet):
     def get_permissions(self):
@@ -19,6 +33,18 @@ class NoticeViews(ViewSet):
             permission_classes = ()
 
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user just 4 post request per second, for create notice object
+        :return:
+        """
+        if self.action == 'create':
+            throttle_classes = (CustomThrottlingUser,)
+        else:
+            throttle_classes = ()
+
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         notice = Notice.objects.all()
