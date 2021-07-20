@@ -3,6 +3,11 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 
 class CustomThrottlingUser(UserRateThrottle):
+    """
+    scope ==> for know that which class or url
+    rate ==> THROTTLE_RATES in base.py
+    use in /views.py
+    """
     scope = 'notice'
     rate = '1/4s'
 

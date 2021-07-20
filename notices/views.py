@@ -12,7 +12,18 @@ from extension import response
 
 
 class NoticeViews(ViewSet):
+    """
+    all user can create notice object but can not show list or update it
+    use throttling in this class ==> each user can 4 request for create in 1 second
+
+    """
+
     def get_permissions(self):
+        """
+        IsSuperUserOrOwnerCart ==> extension/permission.py ==> if user is superuser or
+        object notice for him access to site
+        :return:
+        """
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrOwnerCart,)
         else:
@@ -23,6 +34,7 @@ class NoticeViews(ViewSet):
     def get_throttles(self):
         """
         user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
         :return:
         """
         if self.action == 'create':
@@ -33,6 +45,11 @@ class NoticeViews(ViewSet):
         return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
+        """
+        show list all notices object for superuser
+        :param request:
+        :return:
+        """
         try:
             notice = Notice.objects.all()
             serializer = NoticeListSerializer(notice, context={'request': request}, many=True)
@@ -41,6 +58,12 @@ class NoticeViews(ViewSet):
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def create(self, request):
+        """
+        create notice object by all user
+        when superuser has not approved (status == False) ==> dont send email for user
+        :param request:
+        :return:
+        """
         try:
             serializer = NoticeCreateSerializer(data=request.data)
             if serializer.is_valid():
@@ -50,6 +73,12 @@ class NoticeViews(ViewSet):
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
+        """
+        detail object for superuser
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
             queryset = Notice.objects.filter(pk=pk)
             serializer = NoticeDetailSerializer(queryset, context={'request': request}, many=True)
@@ -58,6 +87,12 @@ class NoticeViews(ViewSet):
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
+        """
+        superuser can update all object notices
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
             notice = Notice.objects.get(pk=pk)
             serializer = NoticeDetailSerializer(notice, data=request.data)
@@ -68,6 +103,12 @@ class NoticeViews(ViewSet):
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
+        """
+        superuser can delete notices object
+        :param request:
+        :param pk:
+        :return:
+        """
         try:
             notice = Notice.objects.get(pk=pk)
             notice.delete()
