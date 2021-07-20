@@ -10,9 +10,9 @@ from .serializers import (
     CartDetailSerializers,
     CartInputSerializers
 )
-from .permissions import (
-    IsSuperUserOrSelfObject,
-    IsSuperUser)
+from extension.permissions import (
+    IsSuperUserOrOwnerCart
+)
 from .models import (
     Cart,
     CartItem
@@ -26,7 +26,7 @@ class CartItemViews(ViewSet):
 
     def get_permissions(self):
         if self.action in ['update', 'destroy']:
-            permission_classes = (IsSuperUserOrSelfObject,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
@@ -56,8 +56,13 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart_obj = obj.get(is_pay=False)
+            print(cart_obj)
+            print("===========")
             cart_items = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
+            print(cart_items)
+            print("///////////")
             queryset = cart_items.get(pk=pk)
+            print(queryset)
             serializer = CartItemDetailSerializers(queryset, context={'request': request})
             return Response(serializer.data)
         except Exception:
@@ -124,9 +129,9 @@ class CartItemViews(ViewSet):
 class CartViews(ViewSet):
     def get_permissions(self):
         if self.action in ['retrieve', 'destroy', 'update']:
-            permission_classes = (IsSuperUserOrSelfObject,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
-            permission_classes = ()
+            permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
 
     def list(self, request):
@@ -135,11 +140,11 @@ class CartViews(ViewSet):
                :param request:
                :return:
         """
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
                 queryset = Cart.objects.filter(is_pay=False)
             else:
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 queryset = obj.filter(is_pay=False)
             serializer = CartListSerializers(queryset, context={'request': request}, many=True)
             return Response(serializer.data)
@@ -153,23 +158,24 @@ class CartViews(ViewSet):
         :param pk:
         :return:
         """
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = Cart.objects.filter(pk=pk)
+                cart = Cart.objects.get(pk=pk)
             else:
-                cart = obj.filter(is_pay=False, user=request.user, pk=pk)
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+                cart = obj.get(is_pay=False, user=request.user, pk=pk)
+
             serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception:
             return Response({'status': 'must you authentications '}, status=400)
 
     def destroy(self, request, pk=None):
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
-                cart = Cart.objects.filter(pk=pk, is_pay=False).first()
+                cart = Cart.objects.get(pk=pk, is_pay=False)
             else:
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart = obj.filter(is_pay=False, user=request.user, pk=pk).first()
             cart.delete()
             return Response({'status': 'ok'}, status=200)
@@ -199,11 +205,11 @@ class CartViews(ViewSet):
             return Response({'status': 'Internal Server Error'}, status=500)
 
     def update(self, request, pk=None):
-        obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
         try:
             if request.user.is_superuser:
                 cart = Cart.objects.get(pk=pk)
             else:
+                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
                 cart = obj.get(is_pay=False, user=request.user, pk=pk)
 
             serializer = CartInputSerializers(cart, data=request.data)

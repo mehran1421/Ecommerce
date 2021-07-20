@@ -4,11 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Q
 from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
-from .permissions import (
-    IsSuperUserOrIsSeller,
-    IsSellerOrSuperUserObject,
-    IsSuperUserOrReadonly
-)
+from extension.permissions import IsSuperUserOrIsSeller, IsSuperUserOrOwnerCart
 from .serializers import (
     ProductSerializer,
     ProductDetailSerializer,
@@ -27,13 +23,12 @@ from .models import (
 
 
 class ProductViews(ViewSet):
+
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'update', 'destroy']:
             permission_classes = (IsSuperUserOrIsSeller,)
-        elif self.action in ['list', 'retrieve']:
-            permission_classes = ()
         else:
-            permission_classes = (IsSellerOrSuperUserObject,)
+            permission_classes = ()
 
         return [permission() for permission in permission_classes]
 
@@ -149,7 +144,7 @@ class ProductViews(ViewSet):
 class CategoryViews(ViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
-            permission_classes = (IsSuperUserOrReadonly,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
             permission_classes = ()
         return [permission() for permission in permission_classes]
@@ -248,7 +243,7 @@ class FigureViews(ViewSet):
     color:""
     and ...
     """
-    permission_classes = (IsSuperUserOrReadonly,)
+    permission_classes = (IsSuperUserOrOwnerCart,)
 
     def list(self, request):
         obj = cacheCategoryOrFigur(request, 'figure', FigureField)

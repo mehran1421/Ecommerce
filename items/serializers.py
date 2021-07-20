@@ -5,7 +5,6 @@ from rest_framework.serializers import (
 )
 from .models import (
     Product,
-    Images,
     Category,
     FigureField
 )
@@ -87,14 +86,6 @@ class CategoryDetailSerializer(ModelSerializer):
         return form_list
 
 
-class ImageSerializer(ModelSerializer):
-    class Meta:
-        model = Images
-        fields = [
-            'image',
-        ]
-
-
 class ProductSerializer(ModelSerializer):
     """
     list product
@@ -119,7 +110,6 @@ class ProductDetailSerializer(ModelSerializer):
     product detail any things
     """
     category = CategoryListSerializer(many=True)
-    images = SerializerMethodField()
     seller = UserListSerializers()
 
     class Meta:
@@ -131,22 +121,12 @@ class ProductDetailSerializer(ModelSerializer):
             'description',
             'category',
             'thumbnail',
-            'images',
+            # 'images',
             'persian_publish',
             'price',
             'status',
             'choice',
         ]
-
-    def get_images(self, obj):
-        image = {}
-        count = 0
-        for i in obj.images_set.all():
-            count += 1
-            image.update({
-                "{0}".format(count): i.image.url
-            })
-        return image
 
 
 class InputProductSerializers(ModelSerializer):

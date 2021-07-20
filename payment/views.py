@@ -1,4 +1,4 @@
-from carts.permissions import IsSuperUser
+from extension.permissions import IsSuperUserOrOwnerCart
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from extension.utils import cacheCart
@@ -37,7 +37,7 @@ class Factors(ViewSet):
 
     def get_permissions(self):
         if self.action in ['destroy', 'update']:
-            permission_classes = (IsSuperUser,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
@@ -73,7 +73,7 @@ class Factors(ViewSet):
                 cart_obj = Cart.objects.get(pk=pk, is_pay=True)
             else:
                 obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart_obj = obj.get(is_pay=True,pk=pk)
+                cart_obj = obj.get(is_pay=True, pk=pk)
 
             serializer = FactorDetailSerializers(cart_obj)
             return Response(serializer.data)
@@ -135,8 +135,10 @@ def send_request(request):
     cart = Cart.objects.filter(user=request.user).first()
     if cart is not None:
         amount = cart.subtotal
+        print(amount)
         result = client.service.PaymentRequest(MERCHANT, amount, description, email, mobile,
                                                f"{CallbackURL}/{cart.pk}/")
+        print(result)
         if result.Status == 100:
             return redirect('https://www.zarinpal.com/pg/StartPay/' + str(result.Authority))
         else:

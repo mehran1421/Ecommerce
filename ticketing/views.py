@@ -2,7 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from carts.permissions import IsSuperUser
+from extension.permissions import IsSuperUserOrOwnerCart
 from .serializers import (
     TicketCreateSerializer,
     TicketDetailSerializer,
@@ -77,7 +77,7 @@ class QuestionAnswerViews(ViewSet):
 class TicketViews(ViewSet):
     def get_permissions(self):
         if self.action in ['update', 'destroy', 'retrieve']:
-            permission_classes = (IsSuperUser,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]

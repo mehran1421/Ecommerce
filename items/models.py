@@ -102,18 +102,3 @@ class Product(models.Model):
         return jalaly_converter(self.publish)
 
     persian_publish.short_description = "تاریخ"
-
-
-class Images(models.Model):
-    """
-     images for each product that can to have many
-    """
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کدام محصول')
-    image = models.ImageField(upload_to='images', verbose_name="عکس")
-
-    class Meta:
-        verbose_name = "عکس"
-        verbose_name_plural = "عکس ها"
-        indexes = [
-            models.Index(fields=['product']),
-        ]

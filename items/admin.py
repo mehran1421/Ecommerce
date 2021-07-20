@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import (
     Product,
-    Images,
     FigureField,
     Category
 )
@@ -29,5 +28,3 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Product, ProductAdmin)
-
-admin.site.register(Images)

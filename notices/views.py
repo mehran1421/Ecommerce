@@ -1,21 +1,19 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.db.models import Q
 from .serializers import (
     NoticeCreateSerializer,
     NoticeDetailSerializer,
     NoticeListSerializer
 )
 from .models import Notice
-from carts.permissions import IsSuperUser
+from extension.permissions import IsSuperUserOrOwnerCart
 from .throttling import CustomThrottlingUser
 
 
 class NoticeViews(ViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
-            permission_classes = (IsSuperUser,)
+            permission_classes = (IsSuperUserOrOwnerCart,)
         else:
             permission_classes = ()
 

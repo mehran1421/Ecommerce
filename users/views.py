@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from carts.permissions import IsSuperUser
+from extension.permissions import IsSuperUserOrOwnerCart
 from .serializers import (
     UserListSerializers,
     UserDetailSerializers
@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class UserViews(ViewSet):
-    permission_classes = (IsSuperUser,)
+    permission_classes = (IsSuperUserOrOwnerCart,)
 
     lookup_field = 'username'
 

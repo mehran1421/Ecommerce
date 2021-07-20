@@ -5,6 +5,8 @@ from .views import send_request, verify, Factors
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 router.register(r'factor', Factors, basename='factor')
+# router.register(r'pay', send_request, basename='pay')
+# router.register(r'verify', verify, basename='verify')
 
 # The API URLs are now determined automatically by the router.
 app_name = 'pay'
