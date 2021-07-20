@@ -2,6 +2,8 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from extension.utils import cacheCart, cacheCartItem
+from extension.exception import CustomException
+from extension import response
 from .serializers import (
     CartItemListSerializers,
     CartItemDetailSerializers,
@@ -42,9 +44,9 @@ class CartItemViews(ViewSet):
             cart_obj = obj.filter(is_pay=False).first()
             query = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
             serializer = CartItemListSerializers(query, context={'request': request}, many=True)
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
         """
@@ -56,17 +58,12 @@ class CartItemViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart_obj = obj.get(is_pay=False)
-            print(cart_obj)
-            print("===========")
             cart_items = cacheCartItem(request, f'cartItem-{cart_obj.user.email}', CartItem, cart_obj)
-            print(cart_items)
-            print("///////////")
             queryset = cart_items.get(pk=pk)
-            print(queryset)
             serializer = CartItemDetailSerializers(queryset, context={'request': request})
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
         try:
@@ -76,9 +73,9 @@ class CartItemViews(ViewSet):
             queryset = cart_items.get(pk=pk)
 
             queryset.delete()
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(message='Delete object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def create(self, request):
         """
@@ -91,16 +88,10 @@ class CartItemViews(ViewSet):
             obj_cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart = obj_cart.get(is_pay=False)
             if serializer.is_valid():
-                if request.user.is_superuser:
-                    serializer.save()
-                else:
-                    serializer.save(cart=cart)
-            else:
-                return Response({'status': 'Bad Request'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+                serializer.save(cart=cart)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
         """
@@ -116,14 +107,10 @@ class CartItemViews(ViewSet):
             queryset = cart_items.get(pk=pk)
             serializer = CartItemInputSerializers(queryset, data=request.data)
             if serializer.is_valid():
-                if request.user.is_superuser:
-                    serializer.save()
-                else:
-                    serializer.save(cart=cart)
-                return Response({'status': 'ok'}, status=200)
-            return Response({'status': 'Internal Server Error'}, status=400)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=500)
+                serializer.save(cart=cart)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
 
 class CartViews(ViewSet):
@@ -141,15 +128,12 @@ class CartViews(ViewSet):
                :return:
         """
         try:
-            if request.user.is_superuser:
-                queryset = Cart.objects.filter(is_pay=False)
-            else:
-                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                queryset = obj.filter(is_pay=False)
+            obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+            queryset = obj.filter(is_pay=False)
             serializer = CartListSerializers(queryset, context={'request': request}, many=True)
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
         """
@@ -159,28 +143,21 @@ class CartViews(ViewSet):
         :return:
         """
         try:
-            if request.user.is_superuser:
-                cart = Cart.objects.get(pk=pk)
-            else:
-                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart = obj.get(is_pay=False, user=request.user, pk=pk)
-
+            obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+            cart = obj.get(is_pay=False, user=request.user, pk=pk)
             serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
-            return Response(serializer.data)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=400)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
         try:
-            if request.user.is_superuser:
-                cart = Cart.objects.get(pk=pk, is_pay=False)
-            else:
-                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart = obj.filter(is_pay=False, user=request.user, pk=pk).first()
+            obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+            cart = obj.filter(is_pay=False, user=request.user, pk=pk).first()
             cart.delete()
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'error'}, status=400)
+            return response.SuccessResponse(message='Delete object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def create(self, request):
         """
@@ -193,32 +170,18 @@ class CartViews(ViewSet):
             len_cart = cart.filter(is_pay=False).count()
             serializer = CartInputSerializers(data=request.data)
             if serializer.is_valid() and len_cart == 0:
-                if request.user.is_superuser:
-                    serializer.save()
-                else:
-                    serializer.save(is_pay=False, user=request.user)
-            else:
-                return Response({'status': 'Bad Request'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+                serializer.save(is_pay=False, user=request.user)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
         try:
-            if request.user.is_superuser:
-                cart = Cart.objects.get(pk=pk)
-            else:
-                obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-                cart = obj.get(is_pay=False, user=request.user, pk=pk)
-
+            obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
+            cart = obj.get(is_pay=False, user=request.user, pk=pk)
             serializer = CartInputSerializers(cart, data=request.data)
             if serializer.is_valid():
-                if request.user.is_superuser:
-                    serializer.save()
-                else:
-                    serializer.save(user=request.user)
-                return Response({'status': 'ok'}, status=200)
-            return Response({'status': 'Internal Server Error'}, status=400)
-        except Exception:
-            return Response({'status': 'must you authentications '}, status=500)
+                serializer.save(user=request.user)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()

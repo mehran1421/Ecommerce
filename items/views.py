@@ -4,7 +4,6 @@ from rest_framework.decorators import action
 from django.db.models import Q
 from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
 from extension.permissions import IsSuperUserOrIsSeller, IsSuperUserOrOwnerCart
-
 from extension.exception import CustomException
 
 from extension import response
@@ -285,6 +284,7 @@ class FigureViews(ViewSet):
                 serializer.save()
                 return response.SuccessResponse(serializer.data).send()
         except CustomException as e:
+            print("===============")
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
