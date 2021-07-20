@@ -1,5 +1,4 @@
 from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
 from .serializers import (
     NoticeCreateSerializer,
     NoticeDetailSerializer,
@@ -8,6 +7,8 @@ from .serializers import (
 from .models import Notice
 from extension.permissions import IsSuperUserOrOwnerCart
 from .throttling import CustomThrottlingUser
+from extension.exception import CustomException
+from extension import response
 
 
 class NoticeViews(ViewSet):
@@ -32,37 +33,44 @@ class NoticeViews(ViewSet):
         return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
-        notice = Notice.objects.all()
-        serializer = NoticeListSerializer(notice, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            notice = Notice.objects.all()
+            serializer = NoticeListSerializer(notice, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def create(self, request):
         try:
             serializer = NoticeCreateSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(status=False)
-            else:
-                return Response({'status': 'Bad Request'}, status=400)
-
-            return Response({'status': 'ok'}, status=200)
-        except Exception:
-            return Response({'status': 'Internal Server Error'}, status=500)
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def retrieve(self, request, pk=None):
-        queryset = Notice.objects.filter(pk=pk)
-        serializer = NoticeDetailSerializer(queryset, context={'request': request}, many=True)
-        return Response(serializer.data)
+        try:
+            queryset = Notice.objects.filter(pk=pk)
+            serializer = NoticeDetailSerializer(queryset, context={'request': request}, many=True)
+            return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def update(self, request, pk=None):
-        notice = Notice.objects.get(pk=pk)
-
-        serializer = NoticeDetailSerializer(notice, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'status': 'ok'}, status=200)
-        return Response({'status': 'Internal Server Error'}, status=500)
+        try:
+            notice = Notice.objects.get(pk=pk)
+            serializer = NoticeDetailSerializer(notice, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return response.SuccessResponse(serializer.data).send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
     def destroy(self, request, pk=None):
-        notice = Notice.objects.get(pk=pk)
-        notice.delete()
-        return Response({'status': 'ok'}, status=200)
+        try:
+            notice = Notice.objects.get(pk=pk)
+            notice.delete()
+            return response.SuccessResponse(message='Deleted object').send()
+        except CustomException as e:
+            return response.ErrorResponse(message=e.detail, status=e.status_code).send()
