@@ -5,7 +5,7 @@ from django.db.models import Q
 from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
 from extension.permissions import IsSuperUserOrIsSeller
 from extension.exception import CustomException
-from rest_framework.permissions import IsAdminUser
+from extension.throttling import CustomThrottlingUser
 from extension import response
 from .serializers import (
     ProductSerializer,
@@ -43,6 +43,15 @@ class ProductViews(ViewSet):
             permission_classes = ()
 
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     lookup_field = 'slug'
 
@@ -177,6 +186,15 @@ class CategoryViews(ViewSet):
             permission_classes = ()
         return [permission() for permission in permission_classes]
 
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
+
     lookup_field = 'slug'
 
     def list(self, request):
@@ -291,6 +309,15 @@ class FigureViews(ViewSet):
         """
         permission_classes = (IsSuperUserOrIsSeller,)
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         try:

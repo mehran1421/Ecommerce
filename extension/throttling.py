@@ -8,8 +8,8 @@ class CustomThrottlingUser(UserRateThrottle):
     rate ==> THROTTLE_RATES in base.py
     use in /views.py
     """
-    scope = 'notice'
-    rate = '1/4s'
+    scope = 'apps'
+    rate = '3/1s'
 
     def parse_rate(self, rate):
         """

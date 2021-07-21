@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from extension.permissions import IsSuperUserOrIsSeller
 from extension import response
+from extension.throttling import CustomThrottlingUser
 from extension.exception import CustomException
 from .serializers import (
     TicketCreateSerializer,
@@ -24,6 +25,15 @@ class QuestionAnswerViews(ViewSet):
     def get_permissions(self):
         permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         try:
@@ -100,6 +110,15 @@ class TicketViews(ViewSet):
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         try:

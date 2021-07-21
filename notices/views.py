@@ -6,7 +6,7 @@ from .serializers import (
 )
 from .models import Notice
 from extension.permissions import IsSuperUserOrIsSeller
-from .throttling import CustomThrottlingUser
+from extension.throttling import CustomThrottlingUser
 from extension.exception import CustomException
 from extension import response
 

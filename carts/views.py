@@ -2,6 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from extension.utils import cacheCart, cacheCartItem
 from extension.exception import CustomException
+from extension.throttling import CustomThrottlingUser
 from extension import response
 from .serializers import (
     CartItemListSerializers,
@@ -40,6 +41,15 @@ class CartItemViews(ViewSet):
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         """
@@ -146,6 +156,15 @@ class CartViews(ViewSet):
             permission_classes = (IsAuthenticated,)
 
         return [permission() for permission in permission_classes]
+
+    def get_throttles(self):
+        """
+        user can 4 post request per second, for create notice object
+        CustomThrottlingUser ==> /throttling.py
+        :return:
+        """
+        throttle_classes = (CustomThrottlingUser,)
+        return [throttle() for throttle in throttle_classes]
 
     def list(self, request):
         """
