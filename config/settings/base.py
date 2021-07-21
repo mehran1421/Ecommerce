@@ -253,9 +253,4 @@ CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_TASK_SERIALIZER = 'json'
 
-# block ip Bot
-bot_block_ip = [
-
-]
-
 MESSAGE_SHOW_TYPE = {'TOAST': 'TOAST', 'NONE': 'NONE'}
