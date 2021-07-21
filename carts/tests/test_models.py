@@ -14,10 +14,10 @@ class ModelItemTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
 
-        res = self.client.post(reverse('carts:cart-list'), data={
+        res = self.client.post('/cart/cart/', data={
             'user': get_user_model().objects.first().pk,
         })
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Cart.objects.all().count(), 1)
 
     def test_list_cart(self):
@@ -69,7 +69,6 @@ class ModelItemTestCase(BaseTest):
         """ Test get list for user """
 
         self.client.force_authenticate(user=self.user)
-        self.user.is_superuser = True
 
         res = self.client.get(reverse('carts:cart-item-list'))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -79,5 +78,6 @@ class ModelItemTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
 
-        self.client.delete(reverse('carts:cart-item-detail', args=[CartItem.objects.first().pk]))
+        res = self.client.delete(reverse('carts:cart-item-detail', args=[CartItem.objects.first().pk]))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(CartItem.objects.all().count(), 0)

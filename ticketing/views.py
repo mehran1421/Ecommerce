@@ -2,7 +2,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from extension.permissions import IsSuperUserOrOwnerCart
+from extension.permissions import IsSuperUserOrIsSeller
 from extension import response
 from extension.exception import CustomException
 from .serializers import (
@@ -38,9 +38,12 @@ class QuestionAnswerViews(ViewSet):
             serializer = AnswerCreateSerializer(data=request.data)
             tick_pk = request.data['question']
             ticket = Ticket.objects.get(pk=tick_pk)
-            if serializer.is_valid() and ticket.status != 'cl':
-                serializer.save(user=request.user)
-                return response.SuccessResponse(serializer.data).send()
+            if serializer.is_valid():
+                if ticket.status != 'cl':
+                    serializer.save(user=request.user)
+                    return response.SuccessResponse(serializer.data).send()
+                else:
+                    return response.ErrorResponse(message='ticket is closed', status=403).send()
         except CustomException as e:
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
@@ -62,10 +65,15 @@ class QuestionAnswerViews(ViewSet):
             else:
                 answer = QuestionAndAnswer.objects.get(pk=pk, user=request.user)
 
+            tick_pk = int(request.data['question'])
+            ticket = Ticket.objects.get(pk=tick_pk)
             serializer = AnswerDetailSerializer(answer, data=request.data)
-            if serializer.is_valid() and serializer.data.get('question').status != 'cl':
-                serializer.save()
-                return response.SuccessResponse(serializer.data).send()
+            if serializer.is_valid():
+                if ticket.status != 'cl':
+                    serializer.save()
+                    return response.SuccessResponse(serializer.data).send()
+                else:
+                    return response.ErrorResponse(message='ticket is closed', status=403).send()
         except CustomException as e:
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 
@@ -88,7 +96,7 @@ class QuestionAnswerViews(ViewSet):
 class TicketViews(ViewSet):
     def get_permissions(self):
         if self.action in ['update', 'destroy', 'retrieve']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (IsSuperUserOrIsSeller,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
@@ -131,7 +139,7 @@ class TicketViews(ViewSet):
             else:
                 ticket = Ticket.objects.get(pk=pk, user=request.user)
 
-            serializer = TicketDetailSerializer(ticket, data=request.data)
+            serializer = TicketDetailSerializer(ticket, context={'request': request}, data=request.data)
             if serializer.is_valid(raise_exception=True):
                 if request.user.is_superuser:
                     serializer.save()

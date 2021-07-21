@@ -3,9 +3,9 @@ from silk.profiling.profiler import silk_profile
 from rest_framework.decorators import action
 from django.db.models import Q
 from extension.utils import productCacheDatabase, cacheDetailProduct, cacheCategoryOrFigur
-from extension.permissions import IsSuperUserOrIsSeller, IsSuperUserOrOwnerCart
+from extension.permissions import IsSuperUserOrIsSeller
 from extension.exception import CustomException
-
+from rest_framework.permissions import IsAdminUser
 from extension import response
 from .serializers import (
     ProductSerializer,
@@ -172,7 +172,7 @@ class CategoryViews(ViewSet):
         :return:
         """
         if self.action in ['create', 'update', 'destroy']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (IsSuperUserOrIsSeller,)
         else:
             permission_classes = ()
         return [permission() for permission in permission_classes]
@@ -230,7 +230,7 @@ class CategoryViews(ViewSet):
         try:
             obj = cacheCategoryOrFigur(request, 'category', Category)
             category = obj.get(slug=slug)
-            serializer = CategoryDetailSerializer(category, data=request.data)
+            serializer = CategoryDetailSerializer(category, context={'request': request}, data=request.data)
             if serializer.is_valid() and request.user.is_superuser:
                 serializer.save()
                 return response.SuccessResponse(serializer.data).send()
@@ -247,7 +247,8 @@ class CategoryViews(ViewSet):
         """
         try:
             obj = cacheCategoryOrFigur(request, 'category', Category)
-            category = obj.get(slug=slug)
+            category = obj.filter(slug=slug).first()
+            print(category)
             category.delete()
             return response.SuccessResponse(message='Delete object').send()
         except CustomException as e:
@@ -281,7 +282,15 @@ class FigureViews(ViewSet):
     color:""
     and ...
     """
-    permission_classes = (IsSuperUserOrOwnerCart,)
+
+    def get_permissions(self):
+        """
+        IsSuperUserOrOwnerCart ==> extension/permission.py ==> if user is superuser or
+        object product for him access to site
+        :return:
+        """
+        permission_classes = (IsSuperUserOrIsSeller,)
+        return [permission() for permission in permission_classes]
 
     def list(self, request):
         try:

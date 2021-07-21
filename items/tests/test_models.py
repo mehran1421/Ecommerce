@@ -66,9 +66,8 @@ class ModelItemTestCase(BaseTest):
 
     def test_delete_category(self):
         """ Test delete category by superuser """
-
-        self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
+        self.client.force_authenticate(user=self.user)
 
         url = reverse('product:category-detail', args=[Category.objects.first().slug])
         res = self.client.delete(url)
@@ -128,7 +127,7 @@ class ModelItemTestCase(BaseTest):
         """ Test figure list request by user """
 
         response = self.client.get('/figure/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_figure_create(self):
         """ Test can not create figure by user """
@@ -160,8 +159,8 @@ class ModelItemTestCase(BaseTest):
         self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
 
-        figure = FigureField.objects.create(type_product='android')
-        response = self.client.put(reverse('product:figure-detail', args=[figure.pk]), data={
+        FigureField.objects.create(type_product='android')
+        response = self.client.put(reverse('product:figure-detail', args=[FigureField.objects.first().pk]), data={
             'type_product': 'backend'
         })
 

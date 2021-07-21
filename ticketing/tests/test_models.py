@@ -105,7 +105,7 @@ class ModelTicketTestCase(BaseTest):
             "question": Ticket.objects.first().pk
         })
 
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_QA_object(self):
         """ Test can delete object """
@@ -153,7 +153,7 @@ class ModelTicketTestCase(BaseTest):
             'description': 'my name is mehran',
             "question": ticket.pk
         })
-        self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_QA_superuser_ticket_closed(self):
         """ Test can not user delete QA object by superuser when ticket status is cl """

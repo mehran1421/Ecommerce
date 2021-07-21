@@ -5,7 +5,7 @@ from .serializers import (
     NoticeListSerializer
 )
 from .models import Notice
-from extension.permissions import IsSuperUserOrOwnerCart
+from extension.permissions import IsSuperUserOrIsSeller
 from .throttling import CustomThrottlingUser
 from extension.exception import CustomException
 from extension import response
@@ -20,12 +20,12 @@ class NoticeViews(ViewSet):
 
     def get_permissions(self):
         """
-        IsSuperUserOrOwnerCart ==> extension/permission.py ==> if user is superuser or
-        object notice for him access to site
+        IsAdminUser for created by rest framework by default
+        just superuser can access to site
         :return:
         """
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (IsSuperUserOrIsSeller,)
         else:
             permission_classes = ()
 

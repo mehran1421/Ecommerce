@@ -1,4 +1,4 @@
-from extension.permissions import IsSuperUserOrOwnerCart
+from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from extension.utils import cacheCart
@@ -39,7 +39,7 @@ class Factors(ViewSet):
 
     def get_permissions(self):
         if self.action in ['destroy', 'update']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (IsAdminUser,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]

@@ -1,7 +1,6 @@
 from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from extension.permissions import IsSuperUserOrOwnerCart
+from rest_framework.permissions import IsAdminUser
 from extension.exception import CustomException
 from extension import response
 from .serializers import (
@@ -13,7 +12,7 @@ User = get_user_model()
 
 
 class UserViews(ViewSet):
-    permission_classes = (IsSuperUserOrOwnerCart,)
+    permission_classes = (IsAdminUser,)
 
     lookup_field = 'username'
 

@@ -1,5 +1,4 @@
 from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from extension.utils import cacheCart, cacheCartItem
 from extension.exception import CustomException
@@ -13,7 +12,8 @@ from .serializers import (
     CartInputSerializers
 )
 from extension.permissions import (
-    IsSuperUserOrOwnerCart
+    CartItemOwnerCartOrSuperuser,
+    OwnerCartOrSuperuser
 )
 from .models import (
     Cart,
@@ -36,7 +36,7 @@ class CartItemViews(ViewSet):
         :return:
         """
         if self.action in ['update', 'destroy']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (CartItemOwnerCartOrSuperuser,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]
@@ -50,7 +50,6 @@ class CartItemViews(ViewSet):
         """
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-
             # this is for select is_pay = False object, that means thay that dont payment
             cart_obj = obj.filter(is_pay=False).first()
 
@@ -85,14 +84,12 @@ class CartItemViews(ViewSet):
     def destroy(self, request, pk=None):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
-
             # this is for select is_pay = False object, that means thay that dont payment
             cart = obj.get(is_pay=False)
             cart_items = cacheCartItem(request, f'cartItem-{cart.user.email}', CartItem, cart)
 
             # this is for select CartItem objects that are in user cart that is_pay = False
             queryset = cart_items.get(pk=pk)
-
             queryset.delete()
             return response.SuccessResponse(message='Delete object').send()
         except CustomException as e:
@@ -144,9 +141,10 @@ class CartViews(ViewSet):
         :return:
         """
         if self.action in ['retrieve', 'destroy', 'update']:
-            permission_classes = (IsSuperUserOrOwnerCart,)
+            permission_classes = (OwnerCartOrSuperuser,)
         else:
             permission_classes = (IsAuthenticated,)
+
         return [permission() for permission in permission_classes]
 
     def list(self, request):
@@ -199,9 +197,12 @@ class CartViews(ViewSet):
             cart = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             len_cart = cart.filter(is_pay=False).count()
             serializer = CartInputSerializers(data=request.data)
-            if serializer.is_valid() and len_cart == 0:
-                serializer.save(is_pay=False, user=request.user)
-                return response.SuccessResponse(serializer.data).send()
+            if serializer.is_valid():
+                if len_cart == 0:
+                    serializer.save(is_pay=False, user=request.user)
+                    return response.SuccessResponse(serializer.data).send()
+                else:
+                    return response.ErrorResponse(message='cart object is_pay == False exist.', status=403).send()
         except CustomException as e:
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()
 

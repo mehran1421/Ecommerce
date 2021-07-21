@@ -1,24 +1,31 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class IsSuperUserOrOwnerCart(BasePermission):
+class CartItemOwnerCartOrSuperuser(BasePermission):
     """
-        use in:
+        use in CartItem (carts/views.py/CartItem class) for update and destroy
         1-create,update,destroy CartItem: superuser or user that owner object can change it
         2-retrieve,destroy,update Cart: ...
     """
 
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         return bool(
-            # get access to superuser
             request.user.is_authenticated and
-            request.user.is_superuser
+            (request.user.is_superuser or
+             obj.cart.user == request.user)
         )
+
+
+class OwnerCartOrSuperuser(BasePermission):
+    """
+        use in Cart (carts/views.py/CartItem class) for update and destroy and retrieve
+    """
 
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_superuser or
-            obj.cart.user == request.user
+            request.user.is_authenticated and
+            (request.user.is_superuser or
+             obj.user == request.user)
         )
 
 
@@ -44,4 +51,18 @@ class IsSuperUserOrIsSeller(BasePermission):
             request.user.is_authenticated and
             (request.user.is_superuser or
              obj.seller == request.user)
+        )
+
+
+class TicketingPermission(BasePermission):
+    """
+    for retrieve and update and destroy by user
+    user can delete or update your ticketing
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user.is_authenticated and
+            (request.user.is_superuser or
+             obj.user == request.user)
         )
