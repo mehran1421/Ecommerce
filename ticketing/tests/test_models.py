@@ -47,6 +47,9 @@ class ModelTicketTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         url = reverse('ticket:ticket-detail', args=[Ticket.objects.first().pk])
         response_super_user = self.client.put(url, data={
@@ -72,6 +75,9 @@ class ModelTicketTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         url = reverse('ticket:ticket-detail', args=[Ticket.objects.first().pk])
         response_super_user = self.client.delete(url)
@@ -132,6 +138,9 @@ class ModelTicketTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         ticket = Ticket.objects.first()
         ticket.status = 'cl'
@@ -160,6 +169,9 @@ class ModelTicketTestCase(BaseTest):
 
         self.client.force_authenticate(user=self.user)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         ticket = Ticket.objects.first()
         ticket.status = 'cl'

@@ -1,8 +1,7 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from extension.permissions import IsSuperUserOrIsSeller
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from extension import response
 from extension.throttling import CustomThrottlingUser
 from extension.exception import CustomException
@@ -105,8 +104,8 @@ class QuestionAnswerViews(ViewSet):
 
 class TicketViews(ViewSet):
     def get_permissions(self):
-        if self.action in ['update', 'destroy', 'retrieve']:
-            permission_classes = (IsSuperUserOrIsSeller,)
+        if self.action in ['update', 'destroy']:
+            permission_classes = (IsAdminUser,)
         else:
             permission_classes = (IsAuthenticated,)
         return [permission() for permission in permission_classes]

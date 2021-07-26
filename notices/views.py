@@ -5,7 +5,7 @@ from .serializers import (
     NoticeListSerializer
 )
 from .models import Notice
-from extension.permissions import IsSuperUserOrIsSeller
+from rest_framework.permissions import IsAdminUser
 from extension.throttling import CustomThrottlingUser
 from extension.exception import CustomException
 from extension import response
@@ -25,7 +25,7 @@ class NoticeViews(ViewSet):
         :return:
         """
         if self.action in ['list', 'retrieve', 'update', 'destroy']:
-            permission_classes = (IsSuperUserOrIsSeller,)
+            permission_classes = (IsAdminUser,)
         else:
             permission_classes = ()
 

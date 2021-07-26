@@ -192,7 +192,7 @@ class CartViews(ViewSet):
         try:
             obj = cacheCart(request, f'cart-{request.user.email}', Cart, request.user)
             cart = obj.get(is_pay=False, user=request.user, pk=pk)
-            serializer = CartDetailSerializers(cart, context={'request': request}, many=True)
+            serializer = CartDetailSerializers(cart, context={'request': request})
             return response.SuccessResponse(serializer.data).send()
         except CustomException as e:
             return response.ErrorResponse(message=e.detail, status=e.status_code).send()

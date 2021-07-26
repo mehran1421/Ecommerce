@@ -31,14 +31,14 @@ class BlockedIpBotUserAgentMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        scrapy_user_agent = 'Scrapy/VERSION (+https://scrapy.org)'
+
         # is_test_server in config/settings/__init__.py for test productions
-        if not settings.is_test_server:
+        if settings.is_test_server:
             if 'HTTP_USER_AGENT' not in request.META:
                 return ErrorResponse(message='You are a Robot!', status=403).send()
             else:
                 user_agent = request.META['HTTP_USER_AGENT']
-                if user_agent == scrapy_user_agent:
+                if 'Scrapy/' in user_agent:
                     return ErrorResponse(message='You are a Robot!', status=403).send()
 
         response = self.get_response(request)

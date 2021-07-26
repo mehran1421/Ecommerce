@@ -34,6 +34,9 @@ class ModelNoticesTestCase(BaseTest):
 
         self.assertEqual(user_update.status_code, status.HTTP_403_FORBIDDEN)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         super_user_update = self.client.put(reverse('notice:notice-detail', args=[Notice.objects.first().pk]), data={
             'email': 'ss@gmail.com'
@@ -52,6 +55,9 @@ class ModelNoticesTestCase(BaseTest):
 
         self.assertEqual(user_update.status_code, status.HTTP_403_FORBIDDEN)
         self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.is_seller = True
+        self.user.is_active = True
 
         super_user_update = self.client.delete(reverse('notice:notice-detail', args=[Notice.objects.first().pk]))
 

@@ -143,11 +143,12 @@ class Factors(ViewSet):
 
 
 def send_request(request):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = Cart.objects.filter(user=request.user, is_pay=False).first()
     if cart is not None:
         amount = cart.subtotal
         result = client.service.PaymentRequest(MERCHANT, amount, description, email, mobile,
                                                f"{CallbackURL}/{cart.pk}/")
+
         if result.Status == 100:
             return redirect('https://www.zarinpal.com/pg/StartPay/' + str(result.Authority))
         else:
