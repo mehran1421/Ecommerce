@@ -37,7 +37,7 @@ idna==2.10
 importlib==1.0.4
 importlib-metadata==4.0.1
 inflection==0.5.1
-ipython==7.24.0
+ipython==7.31.1
 ipython-genutils==0.2.0
 isodate==0.6.0
 itypes==1.2.0
