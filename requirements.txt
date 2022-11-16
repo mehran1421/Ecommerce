@@ -37,7 +37,7 @@ idna==2.10
 importlib==1.0.4
 importlib-metadata==4.0.1
 inflection==0.5.1
-ipython==7.24.0
+ipython==7.31.1
 ipython-genutils==0.2.0
 isodate==0.6.0
 itypes==1.2.0
@@ -85,3 +85,4 @@ urllib3==1.26.4
 wcwidth==0.2.5
 zeep==4.0.0
 zipp==3.4.1
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
