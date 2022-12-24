@@ -85,3 +85,4 @@ urllib3==1.26.4
 wcwidth==0.2.5
 zeep==4.0.0
 zipp==3.4.1
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
