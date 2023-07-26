@@ -5,7 +5,7 @@ autopep8==1.5.7
 backcall==0.2.0
 bson==0.5.8
 cached-property==1.5.2
-certifi==2020.12.5
+certifi==2023.7.22
 cffi==1.14.5
 chardet==4.0.0
 colorama==0.4.4
