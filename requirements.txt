@@ -33,7 +33,7 @@ drf-extensions==0.7.0
 drf-yasg==1.20.0
 funcy==1.16
 gprof2dot==2021.2.21
-idna==2.10
+idna==3.7
 importlib==1.0.4
 importlib-metadata==4.0.1
 inflection==0.5.1
